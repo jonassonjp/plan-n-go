@@ -1,0 +1,33 @@
+# Ambiente virtual (gerenciado pelo pyenv, fora do projeto)
+.venv/
+venv/
+env/
+
+# Django
+*.pyc
+__pycache__/
+db.sqlite3
+media/
+staticfiles/
+
+# Variáveis de ambiente
+.env
+.env.*
+!.env.example
+
+# Testes
+.coverage
+htmlcov/
+.pytest_cache/
+
+# pyenv
+.python-version
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
