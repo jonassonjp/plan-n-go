@@ -1,0 +1,93 @@
+{% load static %}
+
+{% with rotations="rotate-n1,rotate-p1,rotate-n2,rotate-p2,rotate-0" %}
+{% with rotation=destination.id|stringformat:"s"|slice:"-1" %}
+
+<article class="polaroid-card animate-slide-up rotate-p1" style="position:relative;">
+
+  <!-- Fita decorativa -->
+  <div class="tape"></div>
+
+  <!-- Foto -->
+  <div class="polaroid-photo">
+    {% if destination.photo_url %}
+      <img src="{{ destination.photo_url }}" alt="{{ destination.name }}" loading="lazy" />
+    {% else %}
+      <img src="https://source.unsplash.com/800x600/?{{ destination.name|urlencode }},travel"
+        alt="{{ destination.name }}" loading="lazy" />
+    {% endif %}
+
+    <div class="polaroid-photo-overlay"></div>
+
+    <!-- Badge meses -->
+    {% if destination.best_months %}
+      <div class="polaroid-badge">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        {{ destination.best_months_display }}
+      </div>
+    {% endif %}
+
+    <!-- Badge visto -->
+    {% if destination.visa_required %}
+      <div class="polaroid-badge-warning">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2">
+          <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 19-7z"/>
+        </svg>
+        Visto
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Label Polaroid -->
+  <div class="polaroid-label">
+    <h3 class="polaroid-name">{{ destination.name }}</h3>
+    <div class="polaroid-meta">
+      <span>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+          <circle cx="12" cy="10" r="3"/>
+        </svg>
+        {{ destination.country }}
+      </span>
+      {% if destination.languages %}
+        <span>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          {{ destination.languages.0 }}
+        </span>
+      {% endif %}
+    </div>
+
+    {% if destination.currency %}
+      <span class="polaroid-currency">{{ destination.currency }}</span>
+    {% endif %}
+  </div>
+
+  <!-- Botão deletar -->
+  <form method="post" action="{% url 'destinations:delete' destination.id %}"
+    style="position:absolute; top:0.5rem; right:0.5rem; margin:0;"
+    onsubmit="return confirm('Remover {{ destination.name }}?')">
+    {% csrf_token %}
+    <button type="submit" class="card-delete-btn" title="Remover destino">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+      </svg>
+    </button>
+  </form>
+
+</article>
+
+{% endwith %}
+{% endwith %}
