@@ -3,176 +3,480 @@
 
 {% block title %}Plan N'Go — Catalogue seus destinos dos sonhos{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/landing.css' %}" />
+{% endblock %}
+
 {% block body %}
 
-  {% include "components/navbar.html" %}
+<!-- ============================================================
+     NAVBAR
+     ============================================================ -->
+<nav class="navbar">
+  <div class="container navbar__inner">
 
-  <!-- Hero -->
-  <section class="hero">
-    <div class="hero-bg">
-      <img src="{% static 'img/hero-travel.jpg' %}" alt="Destinos de viagem" />
-      <div class="hero-overlay"></div>
+    <a href="{% url 'index' %}" class="navbar__brand">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 19-7z"/>
+      </svg>
+      <span class="navbar__brand-text">Plan N'Go</span>
+    </a>
+
+    <div class="navbar__actions">
+      {% if user.is_authenticated %}
+        <a href="{% url 'destinations:dashboard' %}" class="btn btn--ghost btn--sm">Meu Dashboard</a>
+        <form method="post" action="{% url 'accounts:logout' %}" style="margin:0">
+          {% csrf_token %}
+          <button type="submit" class="btn btn--ghost btn--sm">Sair</button>
+        </form>
+      {% else %}
+        <a href="{% url 'accounts:login' %}"    class="btn btn--ghost btn--sm">Entrar</a>
+        <a href="{% url 'accounts:register' %}" class="btn btn--primary btn--sm">Cadastrar</a>
+      {% endif %}
     </div>
 
-    <div class="hero-content">
-      <div style="margin-bottom:1.5rem;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
-          fill="none" stroke="hsl(16,85%,58%)" stroke-width="1.8">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="2" y1="12" x2="22" y2="12"/>
-          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-        </svg>
-      </div>
+  </div>
+</nav>
 
-      <h1 class="hero-title">Plan N'Go</h1>
 
-      <p class="hero-subtitle">
-        Catalogue seus destinos dos sonhos, descubra a melhor época para visitar
-        e planeje viagens inesquecíveis com informações essenciais na palma da mão.
-      </p>
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<section class="hero">
 
-      <div class="hero-cta">
-        <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg">
-          Começar Agora
+  <div class="hero__bg">
+    <img src="{% static 'img/hero-travel.jpg' %}" alt="Destinos de viagem" />
+    <div class="hero__overlay"></div>
+  </div>
+
+  <div class="hero__content">
+
+    <div class="hero__compass">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="1.8">
+        <circle cx="12" cy="12" r="10"/>
+        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+      </svg>
+    </div>
+
+    <h1 class="hero__title">Plan N'Go</h1>
+
+    <p class="hero__subtitle">
+      Catalogue seus destinos dos sonhos, descubra a melhor época para visitar
+      e planeje viagens inesquecíveis com informações essenciais na palma da mão.
+    </p>
+
+    <div class="hero__cta">
+      <a href="{% url 'accounts:register' %}" class="btn btn--primary btn--lg">
+        Começar Agora
+      </a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'destinations:dashboard' %}" class="btn btn--outline btn--lg">
+          Meu Dashboard
         </a>
-        {% if user.is_authenticated %}
-          <a href="{% url 'destinations:dashboard' %}" class="btn btn-outline btn-lg">
-            Meu Dashboard
-          </a>
-        {% else %}
-          <a href="{% url 'accounts:login' %}" class="btn btn-outline btn-lg">
-            Já tenho conta
-          </a>
-        {% endif %}
-      </div>
+      {% else %}
+        <a href="{% url 'accounts:login' %}" class="btn btn--outline btn--lg">
+          Já tenho conta
+        </a>
+      {% endif %}
+    </div>
 
-      <div class="hero-tagline">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-          fill="none" stroke="currentColor" stroke-width="2">
+    <div class="hero__tagline">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+        <circle cx="12" cy="10" r="3"/>
+      </svg>
+      Explore • Planeje • Viaje
+    </div>
+
+  </div>
+
+  <!-- Wave decorativa -->
+  <div class="hero__wave">
+    <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg"
+      preserveAspectRatio="none">
+      <path
+        d="M0 120L60 110C120 100 240 80 360 70C480 60 600 60 720 65C840 70 960 80 1080 85C1200 90 1320 90 1380 90L1440 90V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+        fill="hsl(35,33%,97%)"/>
+    </svg>
+  </div>
+
+</section>
+
+
+<!-- ============================================================
+     SEÇÃO MEUS DESTINOS
+     ============================================================ -->
+<section class="destinations">
+  <div class="container">
+
+    <!-- Cabeçalho -->
+    <div class="destinations__header">
+      <div class="destinations__title-group">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
           <circle cx="12" cy="10" r="3"/>
         </svg>
-        Explore • Planeje • Viaje
+        <h2 class="destinations__title">Meus Destinos</h2>
+        <span class="destinations__count">4 lugares</span>
       </div>
+
+      <a href="{% url 'accounts:register' %}" class="btn btn--primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Novo Destino
+      </a>
     </div>
 
-    <!-- Wave decorativa -->
-    <div class="hero-wave">
-      <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg"
-        preserveAspectRatio="none">
-        <path d="M0 120L60 110C120 100 240 80 360 70C480 60 600 60 720 65C840 70 960 80 1080 85C1200 90 1320 90 1380 90L1440 90V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
-          fill="hsl(35,33%,97%)"/>
-      </svg>
-    </div>
-  </section>
+    <!-- Grid de cards mock (idêntico ao original) -->
+    <div class="places-grid">
 
-  <!-- Features Section -->
-  <section class="features-section">
-    <div class="container">
-      <div style="text-align:center; margin-bottom:3rem;">
-        <h2 style="font-family:var(--font-display); font-size:clamp(1.75rem,4vw,3rem); font-weight:700; color:var(--color-foreground);">
-          Por que usar o Plan N'Go?
-        </h2>
-        <p style="margin:1rem auto 0; max-width:40rem; color:var(--color-muted-foreground);">
-          Automatizamos a parte chata do planejamento para você focar no que importa: sonhar e viajar.
+      <!-- Machu Picchu -->
+      <div class="animate-slide-up" style="animation-delay:0ms">
+        <article class="polaroid polaroid--r-p1">
+          <div class="polaroid__tape"></div>
+          <div class="polaroid__photo">
+            <img src="{% static 'img/places/machu-picchu.jpg' %}" alt="Machu Picchu" loading="lazy" />
+            <div class="polaroid__photo-overlay"></div>
+            <div class="polaroid__badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              Abr, Mai+
+            </div>
+          </div>
+          <div class="polaroid__label">
+            <h3 class="polaroid__name">Machu Picchu</h3>
+            <div class="polaroid__meta">
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                Peru
+              </span>
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+                Espanhol
+              </span>
+            </div>
+            <span class="polaroid__currency">PEN</span>
+          </div>
+        </article>
+      </div>
+
+      <!-- Tóquio -->
+      <div class="animate-slide-up" style="animation-delay:100ms">
+        <article class="polaroid polaroid--r-n1">
+          <div class="polaroid__tape"></div>
+          <div class="polaroid__photo">
+            <img src="{% static 'img/places/tokyo.jpg' %}" alt="Tóquio" loading="lazy" />
+            <div class="polaroid__photo-overlay"></div>
+            <div class="polaroid__badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              Mar, Abr+
+            </div>
+          </div>
+          <div class="polaroid__label">
+            <h3 class="polaroid__name">Tóquio</h3>
+            <div class="polaroid__meta">
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                Japão
+              </span>
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+                Japonês
+              </span>
+            </div>
+            <span class="polaroid__currency">JPY</span>
+          </div>
+        </article>
+      </div>
+
+      <!-- Santorini -->
+      <div class="animate-slide-up" style="animation-delay:200ms">
+        <article class="polaroid polaroid--r-p2">
+          <div class="polaroid__tape"></div>
+          <div class="polaroid__photo">
+            <img src="{% static 'img/places/santorini.jpg' %}" alt="Santorini" loading="lazy" />
+            <div class="polaroid__photo-overlay"></div>
+            <div class="polaroid__badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              Mai, Jun+
+            </div>
+            <div class="polaroid__badge--warning">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 19-7z"/>
+              </svg>
+              ETIAS
+            </div>
+          </div>
+          <div class="polaroid__label">
+            <h3 class="polaroid__name">Santorini</h3>
+            <div class="polaroid__meta">
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                Grécia
+              </span>
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+                Grego
+              </span>
+            </div>
+            <span class="polaroid__currency">EUR</span>
+          </div>
+        </article>
+      </div>
+
+      <!-- Bali -->
+      <div class="animate-slide-up" style="animation-delay:300ms">
+        <article class="polaroid polaroid--r-n2">
+          <div class="polaroid__tape"></div>
+          <div class="polaroid__photo">
+            <img src="{% static 'img/places/bali.jpg' %}" alt="Bali" loading="lazy" />
+            <div class="polaroid__photo-overlay"></div>
+            <div class="polaroid__badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              Abr, Mai+
+            </div>
+          </div>
+          <div class="polaroid__label">
+            <h3 class="polaroid__name">Bali</h3>
+            <div class="polaroid__meta">
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                Indonésia
+              </span>
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+                Indonésio
+              </span>
+            </div>
+            <span class="polaroid__currency">IDR</span>
+          </div>
+        </article>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     FEATURES
+     ============================================================ -->
+<section class="features">
+  <div class="container">
+
+    <div class="features__header">
+      <h2 class="features__title">Por que usar o Plan N'Go?</h2>
+      <p class="features__subtitle">
+        Automatizamos a parte chata do planejamento para você focar no que importa: sonhar e viajar.
+      </p>
+    </div>
+
+    <div class="features__grid">
+
+      <div class="feature-card">
+        <div class="feature-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </div>
+        <h3 class="feature-card__title">Autocompletar Inteligente</h3>
+        <p class="feature-card__desc">
+          Digite o nome do local e o sistema preenche automaticamente coordenadas, moeda, idioma e mais.
         </p>
       </div>
 
-      <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        </div>
+        <h3 class="feature-card__title">Vistos e Vacinas</h3>
+        <p class="feature-card__desc">
+          Com base na sua nacionalidade, descubra automaticamente se precisa de visto ou vacinas para cada destino.
+        </p>
+      </div>
 
-        <div class="feature-card">
-          <div class="feature-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      <div class="feature-card">
+        <div class="feature-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="2" width="20" height="20" rx="5"/>
+            <circle cx="12" cy="12" r="4"/>
+            <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+          </svg>
+        </div>
+        <h3 class="feature-card__title">Import do Instagram</h3>
+        <p class="feature-card__desc">
+          Cole a URL de um post do Instagram e extraímos automaticamente o local e pontos de interesse mencionados.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+          </svg>
+        </div>
+        <h3 class="feature-card__title">Itinerários Personalizados</h3>
+        <p class="feature-card__desc">
+          Monte roteiros dia a dia com os pontos de interesse que você selecionou para cada destino.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <h3 class="feature-card__title">Colaboração</h3>
+        <p class="feature-card__desc">
+          Marque destinos como públicos e receba sugestões de outros viajantes para enriquecer sua viagem.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+        </div>
+        <h3 class="feature-card__title">Catálogo Visual</h3>
+        <p class="feature-card__desc">
+          Visualize seus destinos em cartões estilo Polaroid com fotos, status e informações essenciais.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="footer__main">
+    <div class="container">
+      <div class="footer__grid">
+
+        <!-- Brand -->
+        <div>
+          <div class="footer__brand">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 19-7z"/>
             </svg>
+            <span class="footer__brand-text">Plan N'Go</span>
           </div>
-          <h3 class="feature-title">Autocompletar Inteligente</h3>
-          <p class="feature-description">
-            Digite o nome do local e o sistema preenche automaticamente coordenadas, moeda, idioma e mais.
+          <p class="footer__tagline">
+            Transforme seus sonhos de viagem em realidade. Planeje, organize
+            e explore o mundo com inteligência.
           </p>
         </div>
 
-        <div class="feature-card">
-          <div class="feature-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="16" y1="13" x2="8" y2="13"/>
-              <line x1="16" y1="17" x2="8" y2="17"/>
-              <polyline points="10 9 9 9 8 9"/>
-            </svg>
-          </div>
-          <h3 class="feature-title">Vistos e Vacinas</h3>
-          <p class="feature-description">
-            Com base na sua nacionalidade, descubra automaticamente se precisa de visto ou vacinas para cada destino.
-          </p>
+        <!-- Recursos -->
+        <div>
+          <h3 class="footer__heading">Recursos</h3>
+          <ul class="footer__links">
+            <li><a href="#">Destinos Populares</a></li>
+            <li><a href="#">Guia de Vistos</a></li>
+            <li><a href="#">Dicas de Viagem</a></li>
+            <li><a href="#">Blog</a></li>
+          </ul>
         </div>
 
-        <div class="feature-card">
-          <div class="feature-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
-              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-              <circle cx="12" cy="12" r="4"/>
-              <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
-            </svg>
-          </div>
-          <h3 class="feature-title">Import do Instagram</h3>
-          <p class="feature-description">
-            Cole a URL de um post do Instagram e extraímos automaticamente o local e pontos de interesse mencionados.
-          </p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
-              <polygon points="3 11 22 2 13 21 11 13 3 11"/>
-            </svg>
-          </div>
-          <h3 class="feature-title">Itinerários Personalizados</h3>
-          <p class="feature-description">
-            Monte roteiros dia a dia com os pontos de interesse que você selecionou para cada destino.
-          </p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-          </div>
-          <h3 class="feature-title">Colaboração</h3>
-          <p class="feature-description">
-            Marque destinos como públicos e receba sugestões de outros viajantes para enriquecer sua viagem.
-          </p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="18" height="18" rx="2"/>
-              <circle cx="8.5" cy="8.5" r="1.5"/>
-              <polyline points="21 15 16 10 5 21"/>
-            </svg>
-          </div>
-          <h3 class="feature-title">Catálogo Visual</h3>
-          <p class="feature-description">
-            Visualize seus destinos em cartões estilo Polaroid com fotos, status e informações essenciais.
-          </p>
+        <!-- Suporte -->
+        <div>
+          <h3 class="footer__heading">Suporte</h3>
+          <ul class="footer__links">
+            <li><a href="#">Central de Ajuda</a></li>
+            <li><a href="#">Contato</a></li>
+            <li><a href="#">Privacidade</a></li>
+            <li><a href="#">Termos de Uso</a></li>
+          </ul>
         </div>
 
       </div>
     </div>
-  </section>
+  </div>
 
-  {% include "components/footer.html" %}
+  <div class="footer__bottom">
+    <div class="container">
+      <div class="footer__bottom-inner">
+        <p class="footer__copy">© 2026 Plan N'Go. Todos os direitos reservados.</p>
+        <div class="footer__social">
+          <a href="#" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="2" width="20" height="20" rx="5"/>
+              <circle cx="12" cy="12" r="4"/>
+              <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+            </svg>
+          </a>
+          <a href="#" aria-label="Twitter">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/>
+            </svg>
+          </a>
+          <a href="https://github.com/jonassonjp/plan-n-go" target="_blank" aria-label="GitHub">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
 
 {% endblock %}
