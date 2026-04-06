@@ -84,11 +84,10 @@
   border-radius: 0.25rem;
 }
 
-/* Cards clicáveis na landing e carrossel */
+/* Cards clicáveis no carrossel */
 .carousel__track .polaroid {
   text-decoration: none;
   color: inherit;
-  display: block;
 }
 
 /* -------------------------------------------------------------
