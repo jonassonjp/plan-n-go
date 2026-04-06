@@ -87,32 +87,30 @@
                   </div>
                 {% endif %}
 
-                <!-- Botões hover -->
-                <div class="polaroid-card__actions">
-                  <button class="polaroid-card__action-btn polaroid-card__action-btn--edit"
+                <!-- Ícones editar/excluir -->
+                <div class="polaroid-card__icon-actions">
+                  <button class="polaroid-card__icon-btn polaroid-card__icon-btn--edit"
                     onclick="event.stopPropagation(); openEditModal({{ dest.pk }})"
                     title="Editar">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
                       stroke="currentColor" stroke-width="2">
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                     </svg>
-                    Editar
                   </button>
                   <form method="post"
                     action="{% url 'destinations:delete' dest.pk %}"
                     onsubmit="return confirm('Remover {{ dest.name }}?')"
-                    onclick="event.stopPropagation()">
+                    onclick="event.stopPropagation()" style="margin:0;">
                     {% csrf_token %}
                     <button type="submit"
-                      class="polaroid-card__action-btn polaroid-card__action-btn--delete"
+                      class="polaroid-card__icon-btn polaroid-card__icon-btn--delete"
                       title="Excluir">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2">
                         <polyline points="3 6 5 6 21 6"/>
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
                       </svg>
-                      Excluir
                     </button>
                   </form>
                 </div>

@@ -1,10 +1,12 @@
 """
 Plan N'Go — URLs do app feed
 """
+
 from django.urls import path
+from . import views
 
 app_name = "feed"
 
 urlpatterns = [
-    # Serão implementadas nas próximas etapas
+    path("destino/<slug:slug>/", views.destination_detail, name="destination_detail"),
 ]
