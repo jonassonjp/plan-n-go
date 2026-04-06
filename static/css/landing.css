@@ -611,3 +611,10 @@ h1,h2,h3,h4,h5,h6 {
 .footer__social a { color: hsla(0,0%,100%,.5); transition: color .15s; display: flex; }
 .footer__social a:hover { color: var(--color-primary); }
 .footer__social svg { width: 1.125rem; height: 1.125rem; }
+
+/* Cards clicáveis na landing page */
+.places-grid .polaroid {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
