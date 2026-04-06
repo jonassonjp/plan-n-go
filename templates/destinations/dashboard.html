@@ -3,195 +3,298 @@
 
 {% block title %}Meus Destinos — Plan N'Go{% endblock %}
 
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/app.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/autocomplete.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />
+{% endblock %}
+
 {% block body %}
 
-  {% include "components/navbar.html" %}
+  {% include "components/app_navbar.html" %}
 
-  <main class="container" style="padding-top:2rem; padding-bottom:4rem;">
+  <main class="app-main">
+    <div class="container">
 
-    <!-- Cabeçalho da seção -->
-    <div class="section-header">
-      <div class="section-title">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2">
-          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-          <circle cx="12" cy="10" r="3"/>
-        </svg>
-        <h1>Meus Destinos</h1>
-        <span class="count-badge">
-          {{ destinations|length }} {{ destinations|length|pluralize:"lugar,lugares" }}
-        </span>
-      </div>
-
-      <button class="btn btn-primary" onclick="openModal('modal-add')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-          fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="12" y1="5" x2="12" y2="19"/>
-          <line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        Novo Destino
-      </button>
-    </div>
-
-    <!-- Mensagens -->
-    {% if messages %}
-      {% for message in messages %}
-        <div class="alert {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %} django-message"
-          style="margin-bottom:1.5rem;">
-          {{ message }}
+      <!-- Cabeçalho -->
+      <div class="dash-header">
+        <div class="dash-header__left">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          <h1>Meus Destinos</h1>
+          <span class="dash-count">
+            {{ destinations|length }} {{ destinations|length|pluralize:"lugar,lugares" }}
+          </span>
         </div>
-      {% endfor %}
-    {% endif %}
-
-    <!-- Grid de destinos ou empty state -->
-    {% if destinations %}
-      <div class="places-grid">
-        {% for destination in destinations %}
-          {% include "destinations/place_card.html" with destination=destination %}
-        {% endfor %}
-      </div>
-    {% else %}
-      <div class="empty-state">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="1.5">
-          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-          <circle cx="12" cy="10" r="3"/>
-        </svg>
-        <h2>Nenhum destino ainda</h2>
-        <p>Comece adicionando seu primeiro destino de viagem!</p>
-        <button class="btn btn-primary btn-lg" onclick="openModal('modal-add')">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2">
+        <button class="btn-primary" onclick="openModal('modal-new-dest')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="12" y1="5" x2="12" y2="19"/>
             <line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
-          Adicionar Primeiro Destino
+          Novo Destino
         </button>
       </div>
-    {% endif %}
 
+      <!-- Mensagens -->
+      {% for message in messages %}
+        <div class="app-alert app-alert--{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+
+      <!-- Grid de destinos -->
+      {% if destinations %}
+        <div class="places-grid">
+          {% for dest in destinations %}
+            {% include "destinations/place_card.html" with destination=dest %}
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="dash-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          <h2>Nenhum destino ainda</h2>
+          <p>Comece adicionando seu primeiro destino de viagem!</p>
+          <button class="btn-primary btn-primary--lg" onclick="openModal('modal-new-dest')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Adicionar Primeiro Destino
+          </button>
+        </div>
+      {% endif %}
+
+    </div>
   </main>
 
-  <!-- ==================== MODAL: Novo Destino ==================== -->
-  <div class="modal-backdrop" id="modal-add">
+
+  <!-- ============================================================
+       MODAL — Novo Destino
+       ============================================================ -->
+  <div class="modal-backdrop" id="modal-new-dest" onclick="handleBackdropClick(event)">
     <div class="modal">
+
       <div class="modal-header">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
           <circle cx="12" cy="10" r="3"/>
         </svg>
-        <h2 class="modal-title">Novo Destino</h2>
+        <h2>Novo Destino</h2>
+        <button class="modal-close" onclick="closeModal('modal-new-dest')" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
 
-      <form class="modal-form" method="post" action="{% url 'destinations:create' %}">
+      <form method="post" action="{% url 'destinations:create' %}" id="form-new-dest">
         {% csrf_token %}
 
-        <!-- Nome -->
-        <div class="form-group">
-          <label class="form-label" for="dest-name">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-              <circle cx="12" cy="10" r="3"/>
-            </svg>
-            Nome do local *
-          </label>
-          <input class="form-input" type="text" id="dest-name" name="name"
-            placeholder="Ex: Machu Picchu, Paris, Chapada Diamantina..." required />
-        </div>
+        <!-- Campos ocultos preenchidos pelo autocomplete -->
+        <input type="hidden" id="dest-continent" name="continent" />
+        <input type="hidden" id="dest-lat"       name="lat" />
+        <input type="hidden" id="dest-lon"       name="lon" />
+        <input type="hidden" id="dest-place-id"  name="place_id" />
 
-        <!-- País -->
-        <div class="form-group">
-          <label class="form-label" for="dest-country">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="2" y1="12" x2="22" y2="12"/>
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-            </svg>
-            País *
-          </label>
-          <input class="form-input" type="text" id="dest-country" name="country"
-            placeholder="Ex: Peru, França, Brasil..." required
-            oninput="detectContinent(this.value)" />
-          <span class="form-hint" id="continent-hint"></span>
-        </div>
+        <div class="modal-body">
 
-        <!-- Idiomas -->
-        <div class="form-group">
-          <label class="form-label">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="2" y1="12" x2="22" y2="12"/>
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-            </svg>
-            Idiomas falados *
-          </label>
-          <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
-            {% for lang in languages %}
-              <button type="button" class="tag-toggle" data-value="{{ lang }}"
-                onclick="toggleTag(this, 'languages')">
-                {{ lang }}
-              </button>
-              <input type="checkbox" name="languages" value="{{ lang }}"
-                style="display:none;" checked disabled />
-            {% endfor %}
-          </div>
-        </div>
-
-        <!-- Melhores meses -->
-        <div class="form-group">
-          <label class="form-label">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
-              <rect x="3" y="4" width="18" height="18" rx="2"/>
-              <line x1="16" y1="2" x2="16" y2="6"/>
-              <line x1="8" y1="2" x2="8" y2="6"/>
-              <line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-            Melhores meses para visitar *
-          </label>
-          <div class="months-grid">
-            {% for month in months %}
-              <button type="button" class="month-toggle" data-value="{{ month.value }}"
-                onclick="toggleMonth(this)">
-                {{ month.label }}
-                <input type="checkbox" name="best_months" value="{{ month.value }}"
-                  style="display:none;" />
-              </button>
-            {% endfor %}
-          </div>
-        </div>
-
-        <!-- Linha: Moeda + Visto -->
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <!-- Nome do local com autocomplete -->
           <div class="form-group">
-            <label class="form-label" for="dest-currency">Moeda</label>
-            <input class="form-input" type="text" id="dest-currency" name="currency"
-              placeholder="Ex: USD, EUR, BRL" maxlength="3" style="text-transform:uppercase;" />
+            <label class="app-label" for="dest-name">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              Nome do local *
+            </label>
+            <div class="dest-name-wrapper">
+              <input class="app-input" type="text" id="dest-name" name="name"
+                placeholder="Ex: Machu Picchu, Chapada Diamantina, Paris..."
+                autocomplete="off" required />
+              <div class="dest-autocomplete" id="dest-autocomplete"></div>
+            </div>
+            <span class="dest-continent-hint" id="dest-continent-hint"></span>
           </div>
+
+          <!-- País -->
           <div class="form-group">
-            <label class="form-label" for="dest-visa">Visto necessário</label>
-            <div class="select-wrapper">
-              <select class="form-select" id="dest-visa" name="visa_required">
-                <option value="">Não sei</option>
-                <option value="false">Não precisa</option>
-                <option value="true">Sim, precisa</option>
-              </select>
+            <label class="app-label" for="dest-country">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="2" y1="12" x2="22" y2="12"/>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              </svg>
+              País *
+            </label>
+            <input class="app-input" type="text" id="dest-country" name="country"
+              placeholder="Ex: Peru, França, Brasil..." required />
+          </div>
+
+          <!-- Idiomas falados -->
+          <div class="form-group">
+            <label class="app-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              Idiomas falados
+            </label>
+            <div class="tag-group" id="languages-group">
+              {% for lang in languages %}
+                <button type="button"
+                  class="tag-btn"
+                  data-value="{{ lang }}"
+                  onclick="toggleTag(this, 'languages')">
+                  {{ lang }}
+                </button>
+                <input type="checkbox" name="languages" value="{{ lang }}"
+                  class="tag-input" disabled style="display:none;" />
+              {% endfor %}
             </div>
           </div>
+
+          <!-- Melhores meses -->
+          <div class="form-group">
+            <label class="app-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+              </svg>
+              Melhores meses para visitar
+            </label>
+            <div class="months-grid">
+              {% for month in months %}
+                <button type="button"
+                  class="month-btn"
+                  data-value="{{ month.value }}"
+                  title="{{ month.full }}"
+                  onclick="toggleMonth(this)">
+                  {{ month.label }}
+                  <input type="checkbox" name="best_months" value="{{ month.value }}"
+                    disabled style="display:none;" />
+                </button>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Linha: Moeda + Visto -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="app-label" for="dest-currency">Moeda</label>
+              <input class="app-input" type="text" id="dest-currency" name="currency"
+                placeholder="Ex: USD, EUR, BRL" maxlength="4"
+                style="text-transform:uppercase;" />
+            </div>
+            <div class="form-group">
+              <label class="app-label" for="dest-visa">Visto necessário</label>
+              <div class="app-select-wrap">
+                <select class="app-select" id="dest-visa" name="visa_required">
+                  <option value="">Não sei</option>
+                  <option value="false">Não precisa</option>
+                  <option value="true">Sim, precisa</option>
+                </select>
+                <svg class="app-select-arrow" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção: Exigências de entrada -->
+          <div class="form-section">
+            <div class="form-section__title">Exigências de entrada</div>
+
+            <!-- Vacinas -->
+            <div class="form-group">
+              <label class="app-label" for="dest-vaccination">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 9l-7 7-4-4"/>
+                  <path d="M22 2L2 22"/>
+                </svg>
+                Vacina necessária
+              </label>
+              <div class="app-select-wrap">
+                <select class="app-select" id="dest-vaccination"
+                  name="vaccination_required"
+                  onchange="toggleVaccineFields(this.value)">
+                  <option value="">Não sei</option>
+                  <option value="false">Não precisa</option>
+                  <option value="true">Sim, precisa</option>
+                </select>
+                <svg class="app-select-arrow" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Lista de vacinas (aparece quando "Sim") -->
+            <div id="vaccine-fields" style="display:none;">
+              <div class="form-group">
+                <label class="app-label">Quais vacinas?</label>
+                <div class="tag-group">
+                  {% for vaccine in vaccines %}
+                    <button type="button"
+                      class="tag-btn"
+                      data-value="{{ vaccine.value }}"
+                      onclick="toggleTag(this, 'vaccines')">
+                      {{ vaccine.label }}
+                    </button>
+                    <input type="checkbox" name="vaccines" value="{{ vaccine.value }}"
+                      disabled style="display:none;" />
+                  {% endfor %}
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="app-label" for="dest-vaccines-notes">Observações</label>
+                <textarea class="app-input" id="dest-vaccines-notes"
+                  name="vaccines_notes" rows="2"
+                  placeholder="Detalhes adicionais sobre as vacinas..."
+                  style="height:auto; padding-top:0.625rem;"></textarea>
+              </div>
+            </div>
+
+            <!-- Outras exigências -->
+            <div class="form-row">
+              <div class="form-group" style="flex:1;">
+                <label class="app-label" for="dest-other-title">
+                  Outra exigência
+                  <span class="app-help">?
+                    <span class="app-help__tooltip">
+                      Ex: ETIAS (Europa), eTA (Canadá), NZeTA (Nova Zelândia)
+                    </span>
+                  </span>
+                </label>
+                <input class="app-input" type="text" id="dest-other-title"
+                  name="other_requirements_title"
+                  placeholder="Ex: ETIAS" />
+              </div>
+              <div class="form-group" style="flex:2;">
+                <label class="app-label" for="dest-other-desc">Descrição</label>
+                <input class="app-input" type="text" id="dest-other-desc"
+                  name="other_requirements_description"
+                  placeholder="Ex: Autorização de viagem para a Europa" />
+              </div>
+            </div>
+
+          </div>
+
         </div>
 
-        <!-- Botões -->
-        <div style="display:flex; gap:0.75rem; justify-content:flex-end; margin-top:0.5rem;">
-          <button type="button" class="btn btn-ghost" onclick="closeModal('modal-add')">
+        <!-- Rodapé do modal -->
+        <div class="modal-footer">
+          <button type="button" class="btn-ghost"
+            onclick="closeModal('modal-new-dest')">
             Cancelar
           </button>
-          <button type="submit" class="btn btn-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" stroke-width="2">
+          <button type="submit" class="btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
               <circle cx="12" cy="10" r="3"/>
             </svg>
@@ -206,21 +309,42 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/destination_autocomplete.js' %}"></script>
 <script>
-const CONTINENT_MAP = {{ continent_map_json|safe }};
+function openModal(id) {
+  document.getElementById(id).classList.add('modal-backdrop--open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('modal-backdrop--open');
+  document.body.style.overflow = '';
+}
+function handleBackdropClick(e) {
+  if (e.target === e.currentTarget) closeModal(e.currentTarget.id);
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-backdrop--open')
+      .forEach(m => { m.classList.remove('modal-backdrop--open'); });
+    document.body.style.overflow = '';
+  }
+});
 
-function detectContinent(country) {
-  const hint = document.getElementById('continent-hint');
-  if (!hint) return;
-  const key = country.trim().toLowerCase();
-  const continent = CONTINENT_MAP[key];
-  hint.textContent = continent ? `Continente: ${continent}` : '';
+function toggleTag(btn, name) {
+  btn.classList.toggle('tag-btn--active');
+  const cb = btn.nextElementSibling;
+  if (cb && cb.type === 'checkbox') cb.disabled = !btn.classList.contains('tag-btn--active');
 }
 
 function toggleMonth(btn) {
-  btn.classList.toggle('active');
-  const checkbox = btn.querySelector('input[type="checkbox"]');
-  if (checkbox) checkbox.disabled = !btn.classList.contains('active');
+  btn.classList.toggle('month-btn--active');
+  const cb = btn.querySelector('input[type="checkbox"]');
+  if (cb) cb.disabled = !btn.classList.contains('month-btn--active');
+}
+
+function toggleVaccineFields(value) {
+  document.getElementById('vaccine-fields').style.display =
+    value === 'true' ? 'block' : 'none';
 }
 </script>
 {% endblock %}
