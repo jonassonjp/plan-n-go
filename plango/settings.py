@@ -126,6 +126,11 @@ else:
 # =============================================================================
 AUTH_USER_MODEL = "accounts.User"
 
+AUTHENTICATION_BACKENDS = [
+    "accounts.backends.EmailAuthBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
 # =============================================================================
 # Validação de senha
 # =============================================================================
