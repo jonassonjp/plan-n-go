@@ -3,7 +3,7 @@
    ============================================================= */
 
 /* -------------------------------------------------------------
-   Cabeçalho do dashboard
+   Cabeçalho
    ------------------------------------------------------------- */
 .dash-header {
   display: flex;
@@ -13,33 +13,30 @@
   flex-wrap: wrap;
   gap: 1rem;
 }
-
 .dash-header__left {
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
-
 .dash-header__left svg {
   width: 1.5rem;
   height: 1.5rem;
-  color: hsl(16, 85%, 58%);
+  color: hsl(16,85%,58%);
+  flex-shrink: 0;
 }
-
 .dash-header__left h1 {
   font-family: 'Playfair Display', serif;
   font-size: clamp(1.5rem, 3vw, 2rem);
   font-weight: 700;
-  color: hsl(20, 20%, 15%);
+  color: hsl(20,20%,15%);
 }
-
 .dash-count {
   padding: 0.125rem 0.75rem;
   border-radius: 9999px;
-  background: hsla(16, 85%, 58%, 0.1);
+  background: hsla(16,85%,58%,0.1);
   font-size: 0.875rem;
   font-weight: 500;
-  color: hsl(16, 85%, 58%);
+  color: hsl(16,85%,58%);
 }
 
 /* -------------------------------------------------------------
@@ -51,7 +48,7 @@
   gap: 0.5rem;
   padding: 0 1.5rem;
   height: 2.75rem;
-  background: hsl(16, 85%, 58%);
+  background: hsl(16,85%,58%);
   color: white;
   border: none;
   border-radius: 9999px;
@@ -59,12 +56,16 @@
   font-size: 0.9375rem;
   font-weight: 500;
   cursor: pointer;
-  box-shadow: 0 4px 14px -3px hsla(16, 85%, 58%, 0.4);
+  box-shadow: 0 4px 14px -3px hsla(16,85%,58%,0.4);
   transition: background 0.2s, transform 0.1s;
   text-decoration: none;
 }
-.btn-primary svg    { width: 1rem; height: 1rem; }
-.btn-primary:hover  { background: hsl(16, 85%, 50%); }
+.btn-primary svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+.btn-primary:hover  { background: hsl(16,85%,50%); }
 .btn-primary:active { transform: scale(0.98); }
 .btn-primary--lg    { height: 3.25rem; font-size: 1rem; padding: 0 2rem; }
 
@@ -75,8 +76,8 @@
   padding: 0 1.25rem;
   height: 2.75rem;
   background: transparent;
-  color: hsl(20, 10%, 45%);
-  border: 1px solid hsl(35, 20%, 88%);
+  color: hsl(20,10%,45%);
+  border: 1px solid hsl(35,20%,88%);
   border-radius: 9999px;
   font-family: 'DM Sans', sans-serif;
   font-size: 0.9375rem;
@@ -84,7 +85,7 @@
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
-.btn-ghost:hover { background: hsl(35, 30%, 92%); color: hsl(20, 20%, 15%); }
+.btn-ghost:hover { background: hsl(35,30%,92%); color: hsl(20,20%,15%); }
 
 /* -------------------------------------------------------------
    Empty state
@@ -100,7 +101,7 @@
 .dash-empty svg {
   width: 4rem;
   height: 4rem;
-  color: hsl(20, 10%, 70%);
+  color: hsl(20,10%,70%);
   margin-bottom: 1.25rem;
 }
 .dash-empty h2 {
@@ -110,25 +111,31 @@
   margin-bottom: 0.5rem;
 }
 .dash-empty p {
-  color: hsl(20, 10%, 45%);
+  color: hsl(20,10%,45%);
   margin-bottom: 1.5rem;
 }
 
 /* -------------------------------------------------------------
-   Modal
+   Modal — usa visibility/opacity para funcionar com toggle de classe
    ------------------------------------------------------------- */
 .modal-backdrop {
-  display: none;
+  visibility: hidden;
+  opacity: 0;
   position: fixed;
   inset: 0;
-  background: hsla(20, 20%, 10%, 0.5);
+  background: hsla(20,20%,10%,0.5);
   backdrop-filter: blur(3px);
   z-index: 100;
+  display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  transition: opacity 0.2s, visibility 0.2s;
 }
-.modal-backdrop--open { display: flex; }
+.modal-backdrop--open {
+  visibility: visible;
+  opacity: 1;
+}
 
 .modal {
   background: white;
@@ -139,12 +146,11 @@
   display: flex;
   flex-direction: column;
   box-shadow: 0 24px 64px -12px rgba(0,0,0,0.3);
-  animation: modal-in 0.2s ease;
+  transform: scale(0.96) translateY(8px);
+  transition: transform 0.2s;
 }
-
-@keyframes modal-in {
-  from { opacity: 0; transform: scale(0.96) translateY(8px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
+.modal-backdrop--open .modal {
+  transform: scale(1) translateY(0);
 }
 
 .modal-header {
@@ -152,11 +158,16 @@
   align-items: center;
   gap: 0.625rem;
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid hsl(35, 20%, 88%);
+  border-bottom: 1px solid hsl(35,20%,88%);
   flex-shrink: 0;
 }
-.modal-header svg { width: 1.25rem; height: 1.25rem; color: hsl(16, 85%, 58%); }
-.modal-header h2  {
+.modal-header svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: hsl(16,85%,58%);
+  flex-shrink: 0;
+}
+.modal-header h2 {
   font-family: 'Playfair Display', serif;
   font-size: 1.25rem;
   font-weight: 600;
@@ -173,12 +184,13 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: hsl(20, 10%, 50%);
+  color: hsl(20,10%,50%);
   transition: background 0.15s;
   margin-left: auto;
+  flex-shrink: 0;
 }
-.modal-close:hover { background: hsl(35, 20%, 92%); }
-.modal-close svg { width: 1rem; height: 1rem; }
+.modal-close:hover { background: hsl(35,20%,92%); }
+.modal-close svg   { width: 1rem; height: 1rem; }
 
 .modal-body {
   overflow-y: auto;
@@ -195,41 +207,37 @@
   justify-content: flex-end;
   gap: 0.75rem;
   padding: 1rem 1.5rem;
-  border-top: 1px solid hsl(35, 20%, 88%);
+  border-top: 1px solid hsl(35,20%,88%);
   flex-shrink: 0;
 }
 
 /* -------------------------------------------------------------
-   Formulário interno do modal
+   Formulário
    ------------------------------------------------------------- */
 .form-group {
   display: flex;
   flex-direction: column;
   gap: 0.375rem;
 }
-
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
-@media (max-width: 500px) {
-  .form-row { grid-template-columns: 1fr; }
-}
+@media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
 
 .form-section {
-  border: 1px solid hsl(35, 20%, 88%);
+  border: 1px solid hsl(35,20%,88%);
   border-radius: 0.75rem;
   padding: 1rem 1.125rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
-
 .form-section__title {
   font-size: 0.75rem;
   font-weight: 500;
-  color: hsl(20, 10%, 45%);
+  color: hsl(20,10%,45%);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -240,23 +248,22 @@
   flex-wrap: wrap;
   gap: 0.5rem;
 }
-
 .tag-btn {
   padding: 0.375rem 0.875rem;
   font-size: 0.8125rem;
   font-weight: 500;
   font-family: 'DM Sans', sans-serif;
   border-radius: 9999px;
-  border: 1px solid hsl(35, 20%, 88%);
-  background: hsl(35, 30%, 95%);
-  color: hsl(20, 20%, 30%);
+  border: 1px solid hsl(35,20%,88%);
+  background: hsl(35,30%,95%);
+  color: hsl(20,20%,30%);
   cursor: pointer;
   transition: all 0.15s;
 }
-.tag-btn:hover       { border-color: hsl(16, 85%, 58%); color: hsl(16, 85%, 45%); }
-.tag-btn--active     {
-  background: hsl(16, 85%, 58%);
-  border-color: hsl(16, 85%, 58%);
+.tag-btn:hover    { border-color: hsl(16,85%,58%); color: hsl(16,85%,45%); }
+.tag-btn--active  {
+  background: hsl(16,85%,58%);
+  border-color: hsl(16,85%,58%);
   color: white;
 }
 
@@ -266,9 +273,7 @@
   grid-template-columns: repeat(6, 1fr);
   gap: 0.375rem;
 }
-@media (max-width: 480px) {
-  .months-grid { grid-template-columns: repeat(4, 1fr); }
-}
+@media (max-width: 480px) { .months-grid { grid-template-columns: repeat(4, 1fr); } }
 
 .month-btn {
   display: flex;
@@ -279,15 +284,15 @@
   font-weight: 500;
   font-family: 'DM Sans', sans-serif;
   border-radius: 0.5rem;
-  border: 1.5px solid hsl(35, 20%, 88%);
+  border: 1.5px solid hsl(35,20%,88%);
   background: transparent;
-  color: hsl(20, 20%, 30%);
+  color: hsl(20,20%,30%);
   cursor: pointer;
   transition: all 0.15s;
 }
-.month-btn:hover    { border-color: hsl(16, 85%, 58%); }
-.month-btn--active  {
-  border-color: hsl(16, 85%, 58%);
-  background: hsla(16, 85%, 58%, 0.1);
-  color: hsl(16, 85%, 45%);
+.month-btn:hover   { border-color: hsl(16,85%,58%); }
+.month-btn--active {
+  border-color: hsl(16,85%,58%);
+  background: hsla(16,85%,58%,0.1);
+  color: hsl(16,85%,45%);
 }
