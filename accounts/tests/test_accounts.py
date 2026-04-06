@@ -81,8 +81,7 @@ class TestRegister:
             "password": "senha@1234",
         })
         assert response.status_code == 200
-        assert "register_done" in response.template_name[0] \
-               or b"Verifique" in response.content
+        assert b"Verifique" in response.content
 
     def test_cadastro_email_duplicado(self, client, active_user):
         response = client.post(reverse("accounts:register"), {
