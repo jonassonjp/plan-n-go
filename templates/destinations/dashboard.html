@@ -16,7 +16,6 @@
   <main class="app-main">
     <div class="container">
 
-      <!-- Cabeçalho -->
       <div class="dash-header">
         <div class="dash-header__left">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -28,8 +27,9 @@
             {{ destinations|length }} {{ destinations|length|pluralize:"lugar,lugares" }}
           </span>
         </div>
-        <button class="btn-primary" onclick="openModal('modal-new-dest')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <button class="btn-primary" onclick="openNewModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.5">
             <line x1="12" y1="5" x2="12" y2="19"/>
             <line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
@@ -37,18 +37,120 @@
         </button>
       </div>
 
-      <!-- Mensagens -->
       {% for message in messages %}
         <div class="app-alert app-alert--{{ message.tags }}">{{ message }}</div>
       {% endfor %}
 
-      <!-- Grid de destinos -->
       {% if destinations %}
         <div class="places-grid">
           {% for dest in destinations %}
-            {% include "destinations/place_card.html" with destination=dest %}
+            <article class="polaroid-card" onclick="openEditModal({{ dest.pk }})">
+
+              <!-- Fita -->
+              <div class="polaroid-card__tape"></div>
+
+              <!-- Foto -->
+              <div class="polaroid-card__photo">
+                {% if dest.photo %}
+                  <img src="{{ dest.photo }}" alt="{{ dest.name }}" loading="lazy" />
+                {% else %}
+                  <div class="polaroid-card__no-photo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5"/>
+                      <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                  </div>
+                {% endif %}
+                <div class="polaroid-card__photo-overlay"></div>
+
+                <!-- Badge meses -->
+                {% if dest.best_months_display %}
+                  <div class="polaroid-card__badge">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="4" width="18" height="18" rx="2"/>
+                      <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    {{ dest.best_months_display }}
+                  </div>
+                {% endif %}
+
+                <!-- Badge visto -->
+                {% if dest.visa_required %}
+                  <div class="polaroid-card__badge polaroid-card__badge--warning">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2">
+                      <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 19-7z"/>
+                    </svg>
+                    {{ dest.visa_type|default:"Visto" }}
+                  </div>
+                {% endif %}
+
+                <!-- Botões hover -->
+                <div class="polaroid-card__actions">
+                  <button class="polaroid-card__action-btn polaroid-card__action-btn--edit"
+                    onclick="event.stopPropagation(); openEditModal({{ dest.pk }})"
+                    title="Editar">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                    Editar
+                  </button>
+                  <form method="post"
+                    action="{% url 'destinations:delete' dest.pk %}"
+                    onsubmit="return confirm('Remover {{ dest.name }}?')"
+                    onclick="event.stopPropagation()">
+                    {% csrf_token %}
+                    <button type="submit"
+                      class="polaroid-card__action-btn polaroid-card__action-btn--delete"
+                      title="Excluir">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                      </svg>
+                      Excluir
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              <!-- Label -->
+              <div class="polaroid-card__label">
+                <h3 class="polaroid-card__name">{{ dest.name }}</h3>
+                <div class="polaroid-card__meta">
+                  <span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                      <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    {{ dest.country }}
+                  </span>
+                  {% if dest.languages %}
+                    <span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="2" y1="12" x2="22" y2="12"/>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                      </svg>
+                      {{ dest.languages.0 }}
+                    </span>
+                  {% endif %}
+                </div>
+                {% if dest.currency %}
+                  <span class="polaroid-card__currency">{{ dest.currency }}</span>
+                {% endif %}
+              </div>
+
+            </article>
           {% endfor %}
         </div>
+
       {% else %}
         <div class="dash-empty">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
@@ -57,8 +159,9 @@
           </svg>
           <h2>Nenhum destino ainda</h2>
           <p>Comece adicionando seu primeiro destino de viagem!</p>
-          <button class="btn-primary btn-primary--lg" onclick="openModal('modal-new-dest')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <button class="btn-primary btn-primary--lg" onclick="openNewModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5">
               <line x1="12" y1="5" x2="12" y2="19"/>
               <line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
@@ -72,9 +175,9 @@
 
 
   <!-- ============================================================
-       MODAL — Novo Destino
+       MODAL — Criar / Editar Destino
        ============================================================ -->
-  <div class="modal-backdrop" id="modal-new-dest" onclick="handleBackdropClick(event)">
+  <div class="modal-backdrop" id="modal-dest" onclick="handleBackdropClick(event)">
     <div class="modal">
 
       <div class="modal-header">
@@ -82,8 +185,8 @@
           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
           <circle cx="12" cy="10" r="3"/>
         </svg>
-        <h2>Novo Destino</h2>
-        <button class="modal-close" onclick="closeModal('modal-new-dest')" type="button">
+        <h2 id="modal-title">Novo Destino</h2>
+        <button class="modal-close" onclick="closeModal()" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="6" x2="6" y2="18"/>
             <line x1="6" y1="6" x2="18" y2="18"/>
@@ -91,10 +194,9 @@
         </button>
       </div>
 
-      <form method="post" action="{% url 'destinations:create' %}" id="form-new-dest">
+      <form method="post" id="form-dest" enctype="multipart/form-data">
         {% csrf_token %}
 
-        <!-- Campos ocultos preenchidos pelo autocomplete -->
         <input type="hidden" id="dest-continent" name="continent" />
         <input type="hidden" id="dest-lat"       name="lat" />
         <input type="hidden" id="dest-lon"       name="lon" />
@@ -102,7 +204,7 @@
 
         <div class="modal-body">
 
-          <!-- Nome do local com autocomplete -->
+          <!-- Nome -->
           <div class="form-group">
             <label class="app-label" for="dest-name">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -134,7 +236,65 @@
               placeholder="Ex: Peru, França, Brasil..." required />
           </div>
 
-          <!-- Idiomas falados -->
+          <!-- Imagem -->
+          <div class="form-group">
+            <label class="app-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+              Imagem do destino
+            </label>
+
+            <!-- Tabs upload / URL -->
+            <div class="img-tabs">
+              <button type="button" class="img-tab img-tab--active"
+                id="tab-upload" onclick="switchImgTab('upload')">
+                Fazer upload
+              </button>
+              <button type="button" class="img-tab"
+                id="tab-url" onclick="switchImgTab('url')">
+                Inserir URL
+              </button>
+            </div>
+
+            <!-- Upload -->
+            <div id="img-panel-upload">
+              <div class="img-upload-area" id="img-upload-area"
+                onclick="document.getElementById('photo-upload-input').click()">
+                <div id="img-preview-container">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                  </svg>
+                  <p>Clique para escolher uma foto</p>
+                  <span>JPG, PNG ou WEBP</span>
+                </div>
+                <img id="img-preview" src="" alt="" style="display:none;
+                  width:100%; height:100%; object-fit:cover; border-radius:8px;" />
+              </div>
+              <input type="file" id="photo-upload-input" name="photo_upload"
+                accept="image/*" style="display:none;"
+                onchange="previewImage(this)" />
+            </div>
+
+            <!-- URL -->
+            <div id="img-panel-url" style="display:none;">
+              <input class="app-input" type="url" id="photo-url-input"
+                name="photo_url"
+                placeholder="https://exemplo.com/imagem.jpg" />
+              <div id="url-preview-wrap" style="margin-top:8px; display:none;">
+                <img id="url-preview" src="" alt=""
+                  style="width:100%; max-height:160px; object-fit:cover;
+                         border-radius:8px; border:1px solid hsl(35,20%,88%);" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Idiomas -->
           <div class="form-group">
             <label class="app-label">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -142,12 +302,10 @@
               </svg>
               Idiomas falados
             </label>
-            <div class="tag-group" id="languages-group">
+            <div class="tag-group">
               {% for lang in languages %}
-                <button type="button"
-                  class="tag-btn"
-                  data-value="{{ lang }}"
-                  onclick="toggleTag(this, 'languages')">
+                <button type="button" class="tag-btn"
+                  data-value="{{ lang }}" onclick="toggleTag(this, 'languages')">
                   {{ lang }}
                 </button>
                 <input type="checkbox" name="languages" value="{{ lang }}"
@@ -156,7 +314,7 @@
             </div>
           </div>
 
-          <!-- Melhores meses -->
+          <!-- Meses -->
           <div class="form-group">
             <label class="app-label">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -169,10 +327,8 @@
             </label>
             <div class="months-grid">
               {% for month in months %}
-                <button type="button"
-                  class="month-btn"
-                  data-value="{{ month.value }}"
-                  title="{{ month.full }}"
+                <button type="button" class="month-btn"
+                  data-value="{{ month.value }}" title="{{ month.full }}"
                   onclick="toggleMonth(this)">
                   {{ month.label }}
                   <input type="checkbox" name="best_months" value="{{ month.value }}"
@@ -182,12 +338,12 @@
             </div>
           </div>
 
-          <!-- Linha: Moeda + Visto -->
+          <!-- Moeda + Visto -->
           <div class="form-row">
             <div class="form-group">
               <label class="app-label" for="dest-currency">Moeda</label>
-              <input class="app-input" type="text" id="dest-currency" name="currency"
-                placeholder="Ex: USD, EUR, BRL" maxlength="4"
+              <input class="app-input" type="text" id="dest-currency"
+                name="currency" placeholder="Ex: USD, EUR, BRL" maxlength="4"
                 style="text-transform:uppercase;" />
             </div>
             <div class="form-group">
@@ -206,19 +362,12 @@
             </div>
           </div>
 
-          <!-- Seção: Exigências de entrada -->
+          <!-- Exigências de entrada -->
           <div class="form-section">
             <div class="form-section__title">Exigências de entrada</div>
 
-            <!-- Vacinas -->
             <div class="form-group">
-              <label class="app-label" for="dest-vaccination">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M19 9l-7 7-4-4"/>
-                  <path d="M22 2L2 22"/>
-                </svg>
-                Vacina necessária
-              </label>
+              <label class="app-label">Vacina necessária</label>
               <div class="app-select-wrap">
                 <select class="app-select" id="dest-vaccination"
                   name="vaccination_required"
@@ -234,71 +383,62 @@
               </div>
             </div>
 
-            <!-- Lista de vacinas (aparece quando "Sim") -->
             <div id="vaccine-fields" style="display:none;">
               <div class="form-group">
                 <label class="app-label">Quais vacinas?</label>
                 <div class="tag-group">
-                  {% for vaccine in vaccines %}
-                    <button type="button"
-                      class="tag-btn"
-                      data-value="{{ vaccine.value }}"
-                      onclick="toggleTag(this, 'vaccines')">
-                      {{ vaccine.label }}
+                  {% for v in vaccines %}
+                    <button type="button" class="tag-btn"
+                      data-value="{{ v.value }}" onclick="toggleTag(this, 'vaccines')">
+                      {{ v.label }}
                     </button>
-                    <input type="checkbox" name="vaccines" value="{{ vaccine.value }}"
+                    <input type="checkbox" name="vaccines" value="{{ v.value }}"
                       disabled style="display:none;" />
                   {% endfor %}
                 </div>
               </div>
-              <div class="form-group">
+              <div class="form-group" style="margin-top:0.75rem;">
                 <label class="app-label" for="dest-vaccines-notes">Observações</label>
                 <textarea class="app-input" id="dest-vaccines-notes"
                   name="vaccines_notes" rows="2"
-                  placeholder="Detalhes adicionais sobre as vacinas..."
+                  placeholder="Detalhes adicionais..."
                   style="height:auto; padding-top:0.625rem;"></textarea>
               </div>
             </div>
 
-            <!-- Outras exigências -->
             <div class="form-row">
-              <div class="form-group" style="flex:1;">
+              <div class="form-group">
                 <label class="app-label" for="dest-other-title">
                   Outra exigência
                   <span class="app-help">?
-                    <span class="app-help__tooltip">
-                      Ex: ETIAS (Europa), eTA (Canadá), NZeTA (Nova Zelândia)
-                    </span>
+                    <span class="app-help__tooltip">Ex: ETIAS (Europa), eTA (Canadá)</span>
                   </span>
                 </label>
                 <input class="app-input" type="text" id="dest-other-title"
-                  name="other_requirements_title"
-                  placeholder="Ex: ETIAS" />
+                  name="other_requirements_title" placeholder="Ex: ETIAS" />
               </div>
-              <div class="form-group" style="flex:2;">
-                <label class="app-label" for="dest-other-desc">Descrição</label>
+              <div class="form-group">
+                <label class="app-label">Descrição</label>
                 <input class="app-input" type="text" id="dest-other-desc"
                   name="other_requirements_description"
-                  placeholder="Ex: Autorização de viagem para a Europa" />
+                  placeholder="Ex: Autorização para a Europa" />
               </div>
             </div>
-
           </div>
 
         </div>
 
-        <!-- Rodapé do modal -->
         <div class="modal-footer">
-          <button type="button" class="btn-ghost"
-            onclick="closeModal('modal-new-dest')">
+          <button type="button" class="btn-ghost" onclick="closeModal()">
             Cancelar
           </button>
           <button type="submit" class="btn-primary">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
               <circle cx="12" cy="10" r="3"/>
             </svg>
-            Adicionar Destino
+            <span id="modal-submit-label">Adicionar Destino</span>
           </button>
         </div>
 
@@ -311,40 +451,197 @@
 {% block extra_js %}
 <script src="{% static 'js/destination_autocomplete.js' %}"></script>
 <script>
-function openModal(id) {
-  document.getElementById(id).classList.add('modal-backdrop--open');
-  document.body.style.overflow = 'hidden';
+const CREATE_URL = "{% url 'destinations:create' %}";
+const EDIT_DATA_URL = "/destinations/{pk}/edit-data/";
+const UPDATE_URL    = "/destinations/{pk}/update/";
+
+// -------------------------------------------------------
+// Modal
+// -------------------------------------------------------
+function openNewModal() {
+  resetModal();
+  document.getElementById("modal-title").textContent      = "Novo Destino";
+  document.getElementById("modal-submit-label").textContent = "Adicionar Destino";
+  document.getElementById("form-dest").action = CREATE_URL;
+  openModal();
 }
-function closeModal(id) {
-  document.getElementById(id).classList.remove('modal-backdrop--open');
-  document.body.style.overflow = '';
-}
-function handleBackdropClick(e) {
-  if (e.target === e.currentTarget) closeModal(e.currentTarget.id);
-}
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    document.querySelectorAll('.modal-backdrop--open')
-      .forEach(m => { m.classList.remove('modal-backdrop--open'); });
-    document.body.style.overflow = '';
+
+async function openEditModal(pk) {
+  resetModal();
+  document.getElementById("modal-title").textContent      = "Editar Destino";
+  document.getElementById("modal-submit-label").textContent = "Salvar Alterações";
+  document.getElementById("form-dest").action = UPDATE_URL.replace("{pk}", pk);
+
+  try {
+    const res  = await fetch(EDIT_DATA_URL.replace("{pk}", pk));
+    const data = await res.json();
+    fillModal(data);
+  } catch(e) {
+    console.error("Erro ao carregar dados:", e);
   }
+
+  openModal();
+}
+
+function fillModal(d) {
+  setVal("dest-name",        d.name);
+  setVal("dest-country",     d.country);
+  setVal("dest-continent",   d.continent);
+  setVal("dest-currency",    d.currency);
+  setVal("dest-visa",        d.visa_required);
+  setVal("dest-vaccination", d.vaccination_required);
+  setVal("dest-vaccines-notes", d.vaccines_notes);
+  setVal("dest-other-title", d.other_requirements_title);
+  setVal("dest-other-desc",  d.other_requirements_description);
+
+  // Continente hint
+  if (d.continent) {
+    const hint = document.getElementById("dest-continent-hint");
+    hint.textContent = `Continente: ${d.continent}`;
+    hint.style.display = "block";
+  }
+
+  // Idiomas
+  (d.languages || []).forEach(lang => {
+    const btn = document.querySelector(`.tag-btn[data-value="${lang}"]`);
+    if (btn) activateTag(btn);
+  });
+
+  // Meses
+  (d.best_months || []).forEach(m => {
+    const btn = document.querySelector(`.month-btn[data-value="${m}"]`);
+    if (btn) activateMonth(btn);
+  });
+
+  // Vacinas
+  if (d.vaccination_required === "true") {
+    toggleVaccineFields("true");
+    (d.vaccines || []).forEach(v => {
+      const btn = document.querySelector(`.tag-btn[data-value="${v}"]`);
+      if (btn) activateTag(btn);
+    });
+  }
+
+  // Imagem existente
+  if (d.photo) {
+    switchImgTab("url");
+    setVal("photo-url-input", d.photo_url || d.photo);
+    previewUrl(d.photo);
+  }
+}
+
+function resetModal() {
+  document.getElementById("form-dest").reset();
+
+  // Desativar todas as tags e meses
+  document.querySelectorAll(".tag-btn--active").forEach(btn => {
+    btn.classList.remove("tag-btn--active");
+    const cb = btn.nextElementSibling;
+    if (cb) cb.disabled = true;
+  });
+  document.querySelectorAll(".month-btn--active").forEach(btn => {
+    btn.classList.remove("month-btn--active");
+    const cb = btn.querySelector("input");
+    if (cb) cb.disabled = true;
+  });
+
+  // Reset imagem
+  switchImgTab("upload");
+  document.getElementById("img-preview").style.display = "none";
+  document.getElementById("img-preview-container").style.display = "flex";
+  document.getElementById("url-preview-wrap").style.display = "none";
+  document.getElementById("dest-continent-hint").style.display = "none";
+  document.getElementById("dest-continent-hint").textContent = "";
+  document.getElementById("dest-continent").value = "";
+  document.getElementById("vaccine-fields").style.display = "none";
+}
+
+function openModal() {
+  document.getElementById("modal-dest").classList.add("modal-backdrop--open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeModal() {
+  document.getElementById("modal-dest").classList.remove("modal-backdrop--open");
+  document.body.style.overflow = "";
+}
+
+function handleBackdropClick(e) {
+  if (e.target === e.currentTarget) closeModal();
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeModal();
 });
 
-function toggleTag(btn, name) {
-  btn.classList.toggle('tag-btn--active');
+// -------------------------------------------------------
+// Helpers de formulário
+// -------------------------------------------------------
+function setVal(id, val) {
+  const el = document.getElementById(id);
+  if (el && val !== undefined && val !== null) el.value = val;
+}
+
+function activateTag(btn) {
+  btn.classList.add("tag-btn--active");
   const cb = btn.nextElementSibling;
-  if (cb && cb.type === 'checkbox') cb.disabled = !btn.classList.contains('tag-btn--active');
+  if (cb && cb.type === "checkbox") cb.disabled = false;
+}
+
+function activateMonth(btn) {
+  btn.classList.add("month-btn--active");
+  const cb = btn.querySelector("input[type='checkbox']");
+  if (cb) cb.disabled = false;
+}
+
+function toggleTag(btn, name) {
+  btn.classList.toggle("tag-btn--active");
+  const cb = btn.nextElementSibling;
+  if (cb && cb.type === "checkbox") cb.disabled = !btn.classList.contains("tag-btn--active");
 }
 
 function toggleMonth(btn) {
-  btn.classList.toggle('month-btn--active');
-  const cb = btn.querySelector('input[type="checkbox"]');
-  if (cb) cb.disabled = !btn.classList.contains('month-btn--active');
+  btn.classList.toggle("month-btn--active");
+  const cb = btn.querySelector("input[type='checkbox']");
+  if (cb) cb.disabled = !btn.classList.contains("month-btn--active");
 }
 
-function toggleVaccineFields(value) {
-  document.getElementById('vaccine-fields').style.display =
-    value === 'true' ? 'block' : 'none';
+function toggleVaccineFields(val) {
+  document.getElementById("vaccine-fields").style.display =
+    val === "true" ? "block" : "none";
 }
+
+// -------------------------------------------------------
+// Tabs de imagem
+// -------------------------------------------------------
+function switchImgTab(tab) {
+  document.getElementById("img-panel-upload").style.display = tab === "upload" ? "block" : "none";
+  document.getElementById("img-panel-url").style.display    = tab === "url"    ? "block" : "none";
+  document.getElementById("tab-upload").classList.toggle("img-tab--active", tab === "upload");
+  document.getElementById("tab-url").classList.toggle("img-tab--active",    tab === "url");
+}
+
+function previewImage(input) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById("img-preview").src = e.target.result;
+    document.getElementById("img-preview").style.display = "block";
+    document.getElementById("img-preview-container").style.display = "none";
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function previewUrl(url) {
+  if (!url) return;
+  const img  = document.getElementById("url-preview");
+  const wrap = document.getElementById("url-preview-wrap");
+  img.src = url;
+  wrap.style.display = "block";
+}
+
+document.getElementById("photo-url-input")?.addEventListener("input", function() {
+  previewUrl(this.value);
+});
 </script>
 {% endblock %}

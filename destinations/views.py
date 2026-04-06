@@ -6,7 +6,7 @@ import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_POST
 from django.contrib import messages
 
 from .geocoding import get_geocoding_backend
@@ -48,6 +48,75 @@ VACCINES = [
 ]
 
 
+def _get_context(extra=None):
+    ctx = {"languages": LANGUAGES, "months": MONTHS, "vaccines": VACCINES}
+    if extra:
+        ctx.update(extra)
+    return ctx
+
+
+def _save_destination(request, instance=None):
+    """Cria ou atualiza um destino a partir do POST."""
+    from .models import Destination
+
+    name        = request.POST.get("name", "").strip()
+    country     = request.POST.get("country", "").strip()
+    continent   = request.POST.get("continent", "").strip()
+    currency    = request.POST.get("currency", "").strip().upper()
+    visa        = request.POST.get("visa_required", "")
+    languages   = request.POST.getlist("languages")
+    best_months = [int(m) for m in request.POST.getlist("best_months") if m.isdigit()]
+
+    vaccination    = request.POST.get("vaccination_required", "")
+    vaccines       = request.POST.getlist("vaccines")
+    vaccines_notes = request.POST.get("vaccines_notes", "").strip()
+    other_title    = request.POST.get("other_requirements_title", "").strip()
+    other_desc     = request.POST.get("other_requirements_description", "").strip()
+
+    photo_url_input = request.POST.get("photo_url", "").strip()
+    photo_upload    = request.FILES.get("photo_upload")
+
+    if not name or not country:
+        return None, "Nome e país são obrigatórios."
+
+    visa_required = None
+    if visa == "true":  visa_required = True
+    elif visa == "false": visa_required = False
+
+    vaccination_required = None
+    if vaccination == "true":  vaccination_required = True
+    elif vaccination == "false": vaccination_required = False
+
+    if instance is None:
+        instance = Destination(user=request.user)
+
+    instance.name        = name
+    instance.country     = country
+    instance.continent   = continent
+    instance.currency    = currency
+    instance.languages   = languages
+    instance.best_months = best_months
+    instance.visa_required           = visa_required
+    instance.vaccination_required    = vaccination_required
+    instance.vaccines                = vaccines
+    instance.vaccines_notes          = vaccines_notes
+    instance.other_requirements_title       = other_title
+    instance.other_requirements_description = other_desc
+    instance.status = Destination.STATUS_ACTIVE
+
+    # Imagem: upload tem prioridade; se não houver upload mas URL, usa URL
+    if photo_upload:
+        instance.photo_upload = photo_upload
+    elif photo_url_input:
+        instance.photo_url = photo_url_input
+    elif not instance.pk:
+        # Fallback para destinos novos sem imagem
+        instance.photo_url = f"https://source.unsplash.com/800x600/?{name},travel"
+
+    instance.save()
+    return instance, None
+
+
 # =============================================================
 # Autocomplete
 # =============================================================
@@ -58,8 +127,7 @@ def autocomplete_view(request):
     query = request.GET.get("q", "").strip()
     if len(query) < 2:
         return JsonResponse({"suggestions": []})
-    backend     = get_geocoding_backend()
-    suggestions = backend.autocomplete(query)
+    suggestions = get_geocoding_backend().autocomplete(query)
     return JsonResponse({"suggestions": suggestions})
 
 
@@ -69,8 +137,7 @@ def place_details_view(request):
     place_id = request.GET.get("place_id", "").strip()
     if not place_id:
         return JsonResponse({"error": "place_id obrigatório"}, status=400)
-    backend = get_geocoding_backend()
-    details = backend.place_details(place_id)
+    details = get_geocoding_backend().place_details(place_id)
     if not details:
         return JsonResponse({"error": "Lugar não encontrado"}, status=404)
     return JsonResponse(details)
@@ -85,13 +152,8 @@ def dashboard(request):
     destinations = request.user.destinations.filter(
         status="active"
     ).order_by("-created_at")
-
-    return render(request, "destinations/dashboard.html", {
-        "destinations":    destinations,
-        "languages":       LANGUAGES,
-        "months":          MONTHS,
-        "vaccines":        VACCINES,
-    })
+    return render(request, "destinations/dashboard.html",
+                  _get_context({"destinations": destinations}))
 
 
 # =============================================================
@@ -101,53 +163,54 @@ def dashboard(request):
 @login_required
 def create(request):
     if request.method == "POST":
-        from .models import Destination
+        instance, error = _save_destination(request)
+        if error:
+            messages.error(request, error)
+        else:
+            messages.success(request, f"{instance.name} adicionado com sucesso!")
+    return redirect("destinations:dashboard")
 
-        name        = request.POST.get("name", "").strip()
-        country     = request.POST.get("country", "").strip()
-        continent   = request.POST.get("continent", "").strip()
-        currency    = request.POST.get("currency", "").strip().upper()
-        visa        = request.POST.get("visa_required", "")
-        languages   = request.POST.getlist("languages")
-        best_months = [int(m) for m in request.POST.getlist("best_months") if m.isdigit()]
 
-        vaccination    = request.POST.get("vaccination_required", "")
-        vaccines       = request.POST.getlist("vaccines")
-        vaccines_notes = request.POST.get("vaccines_notes", "").strip()
-        other_title    = request.POST.get("other_requirements_title", "").strip()
-        other_desc     = request.POST.get("other_requirements_description", "").strip()
+# =============================================================
+# Editar destino — retorna JSON com dados para preencher o modal
+# =============================================================
 
-        if not name or not country:
-            messages.error(request, "Nome e país são obrigatórios.")
-            return redirect("destinations:dashboard")
+@login_required
+@require_GET
+def edit_data(request, pk):
+    """Retorna os dados do destino em JSON para preencher o modal de edição."""
+    dest = get_object_or_404(request.user.destinations, pk=pk)
+    return JsonResponse({
+        "id":           dest.pk,
+        "name":         dest.name,
+        "country":      dest.country,
+        "continent":    dest.continent,
+        "currency":     dest.currency,
+        "languages":    dest.languages,
+        "best_months":  dest.best_months,
+        "visa_required": "" if dest.visa_required is None
+                         else ("true" if dest.visa_required else "false"),
+        "vaccination_required": "" if dest.vaccination_required is None
+                                else ("true" if dest.vaccination_required else "false"),
+        "vaccines":      dest.vaccines,
+        "vaccines_notes": dest.vaccines_notes,
+        "other_requirements_title":       dest.other_requirements_title,
+        "other_requirements_description": dest.other_requirements_description,
+        "photo_url":    dest.photo_url,
+        "photo":        dest.photo,
+    })
 
-        visa_required = None
-        if visa == "true":  visa_required = True
-        elif visa == "false": visa_required = False
 
-        vaccination_required = None
-        if vaccination == "true":  vaccination_required = True
-        elif vaccination == "false": vaccination_required = False
-
-        Destination.objects.create(
-            user=request.user,
-            name=name,
-            country=country,
-            continent=continent,
-            currency=currency,
-            languages=languages,
-            best_months=best_months,
-            visa_required=visa_required,
-            vaccination_required=vaccination_required,
-            vaccines=vaccines,
-            vaccines_notes=vaccines_notes,
-            other_requirements_title=other_title,
-            other_requirements_description=other_desc,
-            photo_url=f"https://source.unsplash.com/800x600/?{name},travel",
-            status=Destination.STATUS_ACTIVE,
-        )
-        messages.success(request, f"{name} adicionado com sucesso!")
-
+@login_required
+def update(request, pk):
+    """Salva as alterações de um destino existente."""
+    dest = get_object_or_404(request.user.destinations, pk=pk)
+    if request.method == "POST":
+        instance, error = _save_destination(request, instance=dest)
+        if error:
+            messages.error(request, error)
+        else:
+            messages.success(request, f"{instance.name} atualizado com sucesso!")
     return redirect("destinations:dashboard")
 
 
@@ -157,8 +220,8 @@ def create(request):
 
 @login_required
 def delete(request, pk):
-    destination = get_object_or_404(request.user.destinations, pk=pk)
-    name = destination.name
-    destination.delete()
+    dest = get_object_or_404(request.user.destinations, pk=pk)
+    name = dest.name
+    dest.delete()
     messages.success(request, f"{name} removido.")
     return redirect("destinations:dashboard")
