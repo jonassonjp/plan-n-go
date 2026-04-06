@@ -1,0 +1,111 @@
+/* =============================================================
+   Plan N'Go — Autocomplete de Destinos CSS
+   ============================================================= */
+
+.dest-name-wrapper {
+  position: relative;
+}
+
+/* Dropdown */
+.dest-autocomplete {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid hsl(35, 20%, 85%);
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 24px -4px hsla(20, 20%, 15%, 0.15);
+  z-index: 200;
+  overflow: hidden;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.dest-autocomplete--open {
+  display: block;
+}
+
+/* Item de sugestão */
+.dest-autocomplete__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.1s;
+}
+
+.dest-autocomplete__item:hover,
+.dest-autocomplete__item--active {
+  background: hsl(35, 30%, 95%);
+}
+
+.dest-autocomplete__item svg {
+  color: hsl(16, 85%, 58%);
+  flex-shrink: 0;
+}
+
+.dest-autocomplete__item-name {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: hsl(20, 20%, 15%);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dest-autocomplete__item-sub {
+  font-size: 0.8125rem;
+  color: hsl(20, 10%, 50%);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Loading */
+.dest-autocomplete__loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  font-size: 0.875rem;
+  color: hsl(20, 10%, 50%);
+}
+
+.dest-autocomplete__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid hsl(35, 20%, 88%);
+  border-top-color: hsl(16, 85%, 58%);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Vazio */
+.dest-autocomplete__empty {
+  padding: 12px 14px;
+  font-size: 0.875rem;
+  color: hsl(20, 10%, 55%);
+  text-align: center;
+}
+
+/* Hint do continente */
+.dest-continent-hint {
+  display: none;
+  font-size: 0.75rem;
+  color: hsl(16, 85%, 45%);
+  margin-top: 4px;
+  font-weight: 500;
+}
