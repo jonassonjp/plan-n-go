@@ -23,7 +23,7 @@
             <img src="{{ user.avatar.url }}" alt="{{ user.public_name }}" class="app-navbar__avatar" />
           {% else %}
             <div class="app-navbar__avatar app-navbar__avatar--initials">
-              {{ user.public_name|slice:":1"|upper }}{{ user.name|slice:":1"|upper }}
+              {{ user.initials }}
             </div>
           {% endif %}
           <span class="app-navbar__profile-name">{{ user.public_name }}</span>

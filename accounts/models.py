@@ -101,3 +101,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     def public_name(self):
         """Nome que aparece para outros usuários."""
         return self.display_name.strip() or self.name
+
+    @property
+    def initials(self):
+        """Iniciais dos dois primeiros nomes. Ex: Jonas Pereira → JP"""
+        parts = self.name.strip().split()
+        if len(parts) >= 2:
+            return (parts[0][0] + parts[1][0]).upper()
+        elif len(parts) == 1:
+            return parts[0][:2].upper()
+        return "?"
