@@ -1,0 +1,613 @@
+/* =============================================================
+   Plan N'Go — Landing Page CSS (fiel ao original Lovable)
+   ============================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+
+/* -------------------------------------------------------------
+   Tokens
+   ------------------------------------------------------------- */
+:root {
+  --color-bg:               hsl(35, 33%, 97%);
+  --color-fg:               hsl(20, 20%, 15%);
+  --color-card:             hsl(0, 0%, 100%);
+  --color-primary:          hsl(16, 85%, 58%);
+  --color-primary-hover:    hsl(16, 85%, 50%);
+  --color-primary-fg:       hsl(0, 0%, 100%);
+  --color-primary-subtle:   hsla(16, 85%, 58%, 0.10);
+  --color-secondary:        hsl(35, 30%, 92%);
+  --color-muted:            hsl(35, 15%, 90%);
+  --color-muted-fg:         hsl(20, 10%, 45%);
+  --color-accent:           hsl(174, 60%, 40%);
+  --color-border:           hsl(35, 20%, 88%);
+  --color-warning:          hsl(38, 92%, 50%);
+  --color-warning-fg:       hsl(20, 20%, 15%);
+  --color-footer-bg:        hsl(25, 35%, 35%);
+
+  --font-display:           'Playfair Display', serif;
+  --font-body:              'DM Sans', sans-serif;
+
+  --radius:                 0.75rem;
+  --radius-full:            9999px;
+
+  --shadow-card:            0 4px 20px -4px hsla(20,20%,15%,0.12);
+  --shadow-card-hover:      0 12px 32px -8px hsla(20,20%,15%,0.2);
+  --shadow-btn:             0 4px 14px -3px hsla(16,85%,58%,0.4);
+  --shadow-polaroid:        0 4px 6px -1px rgba(0,0,0,.10),
+                            0 2px 4px -1px rgba(0,0,0,.06),
+                            0 20px 25px -5px rgba(0,0,0,.10);
+  --shadow-polaroid-hover:  0 25px 50px -12px rgba(0,0,0,.25),
+                            0 10px 10px -5px rgba(0,0,0,.04);
+
+  --gradient-hero:          linear-gradient(180deg,
+                              hsla(20,20%,15%,0) 0%,
+                              hsla(20,20%,15%,.4) 50%,
+                              hsla(20,20%,15%,.85) 100%);
+}
+
+/* -------------------------------------------------------------
+   Reset
+   ------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-family: var(--font-body);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+body { background: var(--color-bg); color: var(--color-fg); line-height: 1.6; }
+
+img { display: block; max-width: 100%; }
+
+a { color: inherit; text-decoration: none; }
+
+h1,h2,h3,h4,h5,h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -.02em;
+  line-height: 1.2;
+}
+
+/* -------------------------------------------------------------
+   Layout
+   ------------------------------------------------------------- */
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* -------------------------------------------------------------
+   Navbar
+   ------------------------------------------------------------- */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid var(--color-border);
+  background: hsla(0,0%,100%,.8);
+  backdrop-filter: blur(8px);
+}
+
+.navbar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 4rem;
+}
+
+.navbar__brand {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.navbar__brand svg { width: 1.5rem; height: 1.5rem; color: var(--color-primary); }
+.navbar__brand-text {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-style: italic;
+  color: var(--color-primary);
+}
+
+.navbar__actions { display: flex; align-items: center; gap: .75rem; }
+
+/* -------------------------------------------------------------
+   Botões
+   ------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding: .625rem 1.5rem;
+  font-family: var(--font-body);
+  font-size: .9375rem;
+  font-weight: 500;
+  border-radius: var(--radius-full);   /* totalmente arredondado — igual ao original */
+  border: none;
+  cursor: pointer;
+  transition: background .2s, transform .1s, box-shadow .2s;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.btn:active { transform: scale(.98); }
+
+.btn--primary {
+  background: var(--color-primary);
+  color: var(--color-primary-fg);
+  box-shadow: var(--shadow-btn);
+}
+.btn--primary:hover { background: var(--color-primary-hover); }
+
+.btn--outline {
+  background: hsla(0,0%,100%,.15);
+  color: #fff;
+  border: 1.5px solid #fff;
+}
+.btn--outline:hover { background: hsla(0,0%,100%,.25); }
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-fg);
+  border-radius: var(--radius);
+}
+.btn--ghost:hover { background: var(--color-secondary); }
+
+.btn--sm { padding: .375rem 1rem; font-size: .875rem; }
+.btn--lg { padding: .875rem 2rem;  font-size: 1rem; }
+
+/* -------------------------------------------------------------
+   Hero
+   ------------------------------------------------------------- */
+.hero {
+  position: relative;
+  height: 70vh;
+  min-height: 500px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.hero__bg { position: absolute; inset: 0; }
+.hero__bg img { width: 100%; height: 100%; object-fit: cover; }
+
+.hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-hero);
+}
+
+.hero__content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 0 1.5rem;
+  text-align: center;
+}
+
+.hero__compass {
+  margin-bottom: 1.5rem;
+  color: var(--color-primary);
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+.hero__title {
+  font-family: var(--font-display);
+  font-size: clamp(3.5rem, 9vw, 7rem);
+  font-weight: 700;
+  letter-spacing: -.03em;
+  color: #fff;
+  margin-bottom: 1rem;
+}
+
+.hero__subtitle {
+  max-width: 40rem;
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  color: hsla(0,0%,100%,.9);
+  line-height: 1.6;
+}
+
+.hero__cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+@media (min-width: 640px) { .hero__cta { flex-direction: row; } }
+
+.hero__tagline {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-top: 1.5rem;
+  color: hsla(0,0%,100%,.7);
+  font-size: .875rem;
+  font-weight: 500;
+}
+.hero__tagline svg { width: 1rem; height: 1rem; flex-shrink: 0; }
+
+.hero__wave {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+.hero__wave svg { width: 100%; display: block; }
+
+/* -------------------------------------------------------------
+   Seção Meus Destinos
+   ------------------------------------------------------------- */
+.destinations { padding: 3rem 0 5rem; }
+
+.destinations__header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+@media (min-width: 640px) {
+  .destinations__header { flex-direction: row; align-items: center; }
+}
+
+.destinations__title-group {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+.destinations__title-group svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--color-primary);
+}
+
+.destinations__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 700;
+  color: var(--color-fg);
+}
+
+.destinations__count {
+  display: inline-flex;
+  align-items: center;
+  padding: .125rem .875rem;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-subtle);
+  font-size: .875rem;
+  font-weight: 500;
+  color: var(--color-primary);
+}
+
+/* -------------------------------------------------------------
+   Grid Polaroid
+   ------------------------------------------------------------- */
+.places-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 2rem;
+  padding: 1.5rem 0;
+}
+@media (min-width: 640px)  { .places-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .places-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1280px) { .places-grid { grid-template-columns: repeat(4, 1fr); } }
+
+/* -------------------------------------------------------------
+   Card Polaroid — fiel ao original (sem rotação, label branco)
+   ------------------------------------------------------------- */
+.polaroid {
+  position: relative;
+  background: #fff;
+  padding: .75rem;                 /* sem padding inferior exagerado */
+  border-radius: 4px;
+  box-shadow: var(--shadow-polaroid);
+  cursor: pointer;
+  transition: box-shadow .4s cubic-bezier(.175,.885,.32,1.275),
+              transform .4s cubic-bezier(.175,.885,.32,1.275);
+  overflow: visible;
+}
+
+.polaroid:hover {
+  box-shadow: var(--shadow-polaroid-hover);
+  transform: translateY(-.75rem);
+  z-index: 10;
+}
+
+/* Fita — amarelo pastel, acima da foto */
+.polaroid__tape {
+  position: absolute;
+  top: -.625rem;
+  left: 50%;
+  transform: translateX(-50%) rotate(1deg);
+  width: 3.5rem;
+  height: 1.25rem;
+  background: hsl(48, 90%, 88%);
+  opacity: .85;
+  z-index: 2;
+  border-radius: 2px;
+}
+
+/* Foto — proporção 4/3 igual ao original */
+.polaroid__photo {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--color-muted);
+  border-radius: 2px;
+}
+
+.polaroid__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .5s ease;
+}
+.polaroid:hover .polaroid__photo img { transform: scale(1.05); }
+
+.polaroid__photo-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.15), transparent);
+  opacity: 0;
+  transition: opacity .3s;
+}
+.polaroid:hover .polaroid__photo-overlay { opacity: 1; }
+
+/* Badge meses — canto superior direito */
+.polaroid__badge {
+  position: absolute;
+  top: .5rem;
+  right: .5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .2rem .625rem;
+  border-radius: var(--radius-full);
+  background: hsla(0,0%,100%,.92);
+  backdrop-filter: blur(4px);
+  font-size: .75rem;
+  font-weight: 500;
+  color: var(--color-fg);
+  box-shadow: 0 1px 3px rgba(0,0,0,.1);
+}
+.polaroid__badge svg { width: .75rem; height: .75rem; color: var(--color-accent); }
+
+/* Badge visto — canto superior esquerdo, laranja */
+.polaroid__badge--warning {
+  position: absolute;
+  top: .5rem;
+  left: .5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .2rem .625rem;
+  border-radius: var(--radius-full);
+  background: var(--color-warning);
+  font-size: .75rem;
+  font-weight: 500;
+  color: var(--color-warning-fg);
+  box-shadow: 0 1px 3px rgba(0,0,0,.1);
+}
+.polaroid__badge--warning svg { width: .75rem; height: .75rem; }
+
+/* Label inferior — fundo branco, fora da foto */
+.polaroid__label {
+  position: relative;
+  padding: .75rem .5rem .625rem;
+  background: #fff;
+}
+
+.polaroid__name {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+  margin-bottom: .25rem;
+}
+
+.polaroid__meta {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  font-size: .8125rem;
+  color: var(--color-muted-fg);
+}
+.polaroid__meta span {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+}
+.polaroid__meta svg { width: .75rem; height: .75rem; flex-shrink: 0; }
+
+/* Moeda — stamp no canto inferior direito do label */
+.polaroid__currency {
+  position: absolute;
+  bottom: .625rem;
+  right: .5rem;
+  padding: .125rem .4rem;
+  border: 1px solid hsla(16,85%,58%,.35);
+  border-radius: 4px;
+  background: hsla(16,85%,58%,.06);
+  font-size: .625rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+/* Animação entrada */
+.animate-slide-up {
+  animation: slide-up .5s ease-out both;
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* -------------------------------------------------------------
+   Features
+   ------------------------------------------------------------- */
+.features {
+  background: hsl(40, 30%, 94%);   /* bege/creme idêntico ao original */
+  padding: 5rem 0;
+}
+
+.features__header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.features__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 4vw, 3rem);
+  font-weight: 700;
+  color: var(--color-fg);
+}
+
+.features__subtitle {
+  margin: 1rem auto 0;
+  max-width: 40rem;
+  color: var(--color-muted-fg);
+  line-height: 1.6;
+}
+
+.features__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+@media (min-width: 640px)  { .features__grid { grid-template-columns: repeat(2,1fr); } }
+@media (min-width: 1024px) { .features__grid { grid-template-columns: repeat(3,1fr); } }
+
+/* Card feature — igual ao original: branco, sombra leve, radius generoso */
+.feature-card {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 1.75rem;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow .3s;
+}
+.feature-card:hover { box-shadow: var(--shadow-card-hover); }
+
+/* Ícone — quadrado arredondado coral suave */
+.feature-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: .75rem;
+  background: var(--color-primary-subtle);
+  margin-bottom: 1.25rem;
+}
+.feature-card__icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--color-primary);
+  stroke-width: 1.75;
+}
+
+.feature-card__title {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--color-fg);
+  margin-bottom: .5rem;
+}
+
+.feature-card__desc {
+  font-size: .875rem;
+  line-height: 1.65;
+  color: var(--color-muted-fg);
+}
+
+/* -------------------------------------------------------------
+   Footer — marrom quente hsl(25,35%,35%)
+   ------------------------------------------------------------- */
+.footer { background: var(--color-footer-bg); color: #fff; }
+
+.footer__main { padding: 3.5rem 0 4rem; }
+
+/* 3 colunas iguais como no original */
+.footer__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+}
+@media (min-width: 768px) {
+  .footer__grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.footer__brand {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: 1rem;
+}
+.footer__brand svg    { width: 1.125rem; height: 1.125rem; color: var(--color-primary); }
+.footer__brand-text   {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-style: italic;
+  color: var(--color-primary);
+}
+
+.footer__tagline {
+  font-size: .875rem;
+  line-height: 1.65;
+  color: hsla(0,0%,100%,.75);
+  max-width: 20rem;
+}
+
+.footer__heading {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 1.25rem;
+  letter-spacing: 0;
+}
+
+.footer__links { list-style: none; display: flex; flex-direction: column; gap: .875rem; }
+.footer__links a {
+  font-size: .875rem;
+  color: hsla(0,0%,100%,.65);
+  transition: color .15s;
+}
+.footer__links a:hover { color: var(--color-primary); }
+
+.footer__bottom {
+  border-top: 1px solid hsla(0,0%,100%,.12);
+  padding: 1.25rem 0;
+}
+
+.footer__bottom-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+@media (min-width: 640px) { .footer__bottom-inner { flex-direction: row; } }
+
+.footer__copy { font-size: .8125rem; color: hsla(0,0%,100%,.5); }
+
+.footer__social { display: flex; align-items: center; gap: 1rem; }
+.footer__social a { color: hsla(0,0%,100%,.5); transition: color .15s; display: flex; }
+.footer__social a:hover { color: var(--color-primary); }
+.footer__social svg { width: 1.125rem; height: 1.125rem; }
