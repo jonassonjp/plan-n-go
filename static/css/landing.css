@@ -618,3 +618,10 @@ h1,h2,h3,h4,h5,h6 {
   color: inherit;
   display: block;
 }
+
+/* Cards clicáveis na landing page */
+.places-grid .polaroid {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
