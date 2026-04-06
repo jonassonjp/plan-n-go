@@ -1,0 +1,555 @@
+/* =============================================================
+   Plan N'Go — App CSS (páginas internas do sistema)
+   ============================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Sans:wght@300;400;500&display=swap');
+
+:root {
+  --color-bg:             hsl(35, 33%, 97%);
+  --color-fg:             hsl(20, 20%, 15%);
+  --color-card:           hsl(0, 0%, 100%);
+  --color-primary:        hsl(16, 85%, 58%);
+  --color-primary-hover:  hsl(16, 85%, 50%);
+  --color-primary-fg:     hsl(0, 0%, 100%);
+  --color-primary-subtle: hsla(16, 85%, 58%, 0.08);
+  --color-primary-tip:    hsla(16, 85%, 58%, 0.06);
+  --color-secondary:      hsl(35, 30%, 92%);
+  --color-muted-fg:       hsl(20, 10%, 45%);
+  --color-border:         hsl(35, 20%, 88%);
+  --color-success:        hsl(158, 64%, 40%);
+  --color-error-bg:       hsla(0, 84%, 60%, 0.1);
+  --color-error-border:   hsla(0, 84%, 60%, 0.3);
+  --color-error-fg:       hsl(0, 72%, 45%);
+  --color-success-bg:     hsla(158, 64%, 40%, 0.1);
+  --color-success-border: hsla(158, 64%, 40%, 0.3);
+  --color-success-fg:     hsl(158, 64%, 30%);
+
+  --font-display: 'Playfair Display', serif;
+  --font-body:    'DM Sans', sans-serif;
+  --radius:       0.75rem;
+  --radius-full:  9999px;
+  --shadow-card:  0 2px 12px -2px hsla(20, 20%, 15%, 0.08);
+  --shadow-btn:   0 4px 14px -3px hsla(16, 85%, 58%, 0.4);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-family: var(--font-body); -webkit-font-smoothing: antialiased; }
+body { background: var(--color-bg); color: var(--color-fg); line-height: 1.6; }
+a    { color: inherit; text-decoration: none; }
+
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* =============================================================
+   Navbar do App (páginas internas)
+   ============================================================= */
+.app-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: hsla(0, 0%, 100%, .92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.app-navbar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 3.5rem;
+}
+
+.app-navbar__brand {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.125rem;
+  color: var(--color-primary);
+}
+.app-navbar__brand svg { width: 1.125rem; height: 1.125rem; color: var(--color-primary); }
+
+.app-navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+}
+
+.app-navbar__link {
+  padding: .375rem .875rem;
+  font-size: .9rem;
+  color: var(--color-fg);
+  border-radius: var(--radius);
+  transition: background .15s, color .15s;
+}
+.app-navbar__link:hover { background: var(--color-secondary); }
+
+.app-navbar__divider {
+  width: 1px;
+  height: 1.25rem;
+  background: var(--color-border);
+  margin: 0 .375rem;
+}
+
+/* Perfil na navbar */
+.app-navbar__profile {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .25rem .625rem .25rem .25rem;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  transition: background .15s, border-color .15s;
+  cursor: pointer;
+}
+.app-navbar__profile:hover {
+  background: var(--color-secondary);
+  border-color: var(--color-border);
+}
+
+.app-navbar__avatar {
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.app-navbar__avatar--initials {
+  background: hsla(16, 85%, 58%, .15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .6875rem;
+  font-weight: 500;
+  color: var(--color-primary);
+}
+
+.app-navbar__profile-name {
+  font-size: .875rem;
+  font-weight: 500;
+  color: var(--color-fg);
+  max-width: 7rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Botão Sair */
+.app-navbar__logout {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  padding: .375rem .875rem;
+  font-family: var(--font-body);
+  font-size: .9rem;
+  color: var(--color-muted-fg);
+  background: none;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.app-navbar__logout:hover { background: var(--color-secondary); color: var(--color-fg); }
+.app-navbar__logout svg  { width: 1rem; height: 1rem; }
+
+/* Botão Cadastrar (visitantes) */
+.app-navbar__btn {
+  padding: .375rem 1rem;
+  font-size: .875rem;
+  font-weight: 500;
+  color: var(--color-primary-fg);
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+  transition: background .15s;
+}
+.app-navbar__btn:hover { background: var(--color-primary-hover); }
+
+/* =============================================================
+   Layout principal
+   ============================================================= */
+.app-main {
+  padding: 2.5rem 0 4rem;
+}
+
+/* =============================================================
+   Alertas
+   ============================================================= */
+.app-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  padding: .75rem 1rem;
+  border-radius: var(--radius);
+  font-size: .875rem;
+  line-height: 1.5;
+  margin-bottom: 1.25rem;
+}
+.app-alert svg { width: 1rem; height: 1rem; flex-shrink: 0; margin-top: .125rem; }
+.app-alert--error   { background: var(--color-error-bg);   border: 1px solid var(--color-error-border);   color: var(--color-error-fg); }
+.app-alert--success { background: var(--color-success-bg); border: 1px solid var(--color-success-border); color: var(--color-success-fg); }
+.app-alert--info    { background: var(--color-primary-subtle); border: 1px solid hsla(16,85%,58%,.2); color: hsl(16,60%,35%); }
+
+/* =============================================================
+   Formulário (inputs, selects, labels, hints)
+   ============================================================= */
+.app-label {
+  font-size: .875rem;
+  font-weight: 500;
+  color: var(--color-fg);
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: .375rem;
+}
+.app-label svg { width: .875rem; height: .875rem; opacity: .5; flex-shrink: 0; }
+
+.app-help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-muted-fg);
+  font-size: .625rem;
+  font-weight: 700;
+  color: var(--color-muted-fg);
+  cursor: help;
+  position: relative;
+  flex-shrink: 0;
+  transition: border-color .15s, color .15s;
+}
+.app-help:hover { border-color: var(--color-primary); color: var(--color-primary); }
+
+.app-help__tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + .5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 13rem;
+  padding: .5rem .75rem;
+  background: hsl(20, 20%, 18%);
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 400;
+  line-height: 1.5;
+  border-radius: .5rem;
+  z-index: 200;
+  pointer-events: none;
+  white-space: normal;
+  text-align: left;
+}
+.app-help__tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: hsl(20, 20%, 18%);
+}
+.app-help:hover .app-help__tooltip { display: block; }
+
+.app-input {
+  width: 100%;
+  height: 2.625rem;
+  padding: 0 .875rem;
+  font-family: var(--font-body);
+  font-size: .9375rem;
+  color: var(--color-fg);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.app-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px hsla(16, 85%, 58%, .1);
+}
+.app-input::placeholder { color: var(--color-muted-fg); }
+
+.app-select-wrap { position: relative; }
+.app-select {
+  width: 100%;
+  height: 2.625rem;
+  padding: 0 2.5rem 0 .875rem;
+  font-family: var(--font-body);
+  font-size: .9375rem;
+  color: var(--color-fg);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+}
+.app-select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px hsla(16, 85%, 58%, .1);
+}
+.app-select-arrow {
+  position: absolute;
+  right: .875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: .875rem;
+  height: .875rem;
+  color: var(--color-muted-fg);
+  pointer-events: none;
+}
+
+.app-hint {
+  font-size: .75rem;
+  color: var(--color-muted-fg);
+  margin-top: .25rem;
+  display: block;
+}
+.app-hint strong { color: var(--color-fg); font-weight: 500; }
+
+/* =============================================================
+   Boas-vindas
+   ============================================================= */
+.profile-welcome {
+  margin-bottom: 1.75rem;
+}
+.profile-welcome__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.375rem, 3vw, 1.875rem);
+  font-weight: 700;
+  color: var(--color-fg);
+  margin-bottom: .25rem;
+}
+.profile-welcome__sub {
+  font-size: .9375rem;
+  color: var(--color-muted-fg);
+}
+
+/* =============================================================
+   Steps de progresso
+   ============================================================= */
+.profile-steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  row-gap: .5rem;
+}
+
+.profile-step {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  font-size: .8125rem;
+}
+
+.profile-step__dot {
+  width: 1.375rem;
+  height: 1.375rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .6875rem;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.profile-step__dot svg { width: .75rem; height: .75rem; }
+
+.profile-step--done  .profile-step__dot { background: var(--color-success); color: #fff; }
+.profile-step--active .profile-step__dot { background: var(--color-primary); color: #fff; }
+.profile-step--todo  .profile-step__dot { background: var(--color-border); color: var(--color-muted-fg); }
+
+.profile-step--done  span { color: var(--color-success); }
+.profile-step--active span { color: var(--color-primary); font-weight: 500; }
+.profile-step--todo  span { color: var(--color-muted-fg); }
+
+.profile-step__line {
+  flex: 1;
+  min-width: 1.5rem;
+  height: 1px;
+  background: var(--color-border);
+  margin: 0 .5rem;
+}
+
+/* =============================================================
+   Grid de cards do perfil
+   ============================================================= */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  max-width: 780px;
+}
+@media (max-width: 640px) {
+  .profile-grid { grid-template-columns: 1fr; }
+}
+
+.profile-card {
+  background: var(--color-card);
+  border: 0.5px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-card);
+}
+.profile-card--full { grid-column: 1 / -1; }
+
+.profile-card__title {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  font-size: .75rem;
+  font-weight: 500;
+  color: var(--color-muted-fg);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 1.125rem;
+}
+.profile-card__title svg { width: .875rem; height: .875rem; }
+
+/* Identidade pública — layout lado a lado */
+.profile-identity {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.profile-avatar-area {
+  display: flex;
+  align-items: center;
+  gap: .875rem;
+  flex-shrink: 0;
+}
+
+.profile-avatar-preview {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: var(--color-primary-subtle);
+  border: 2px dashed var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-style .15s;
+}
+.profile-avatar-preview:hover { border-style: solid; }
+.profile-avatar-preview svg { width: 1.5rem; height: 1.5rem; color: var(--color-primary); }
+.profile-avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+
+.profile-avatar-info p {
+  font-size: .8125rem;
+  color: var(--color-muted-fg);
+  margin-bottom: .375rem;
+}
+
+.btn-upload {
+  font-size: .75rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  background: transparent;
+  border-radius: var(--radius);
+  padding: .3125rem .75rem;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: background .15s;
+}
+.btn-upload:hover { background: var(--color-primary-subtle); }
+
+.profile-name-field { flex: 1; min-width: 200px; }
+
+/* Tip box */
+.profile-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: .625rem;
+  margin-top: 1rem;
+  padding: .75rem 1rem;
+  background: var(--color-primary-tip);
+  border: 1px solid hsla(16, 85%, 58%, .2);
+  border-radius: var(--radius);
+}
+.profile-tip svg { width: 1rem; height: 1rem; color: var(--color-primary); flex-shrink: 0; margin-top: .125rem; }
+.profile-tip p   { font-size: .8125rem; color: hsl(16, 50%, 32%); line-height: 1.5; }
+
+/* Card primeiro destino */
+.profile-card__desc {
+  font-size: .875rem;
+  color: var(--color-muted-fg);
+  line-height: 1.6;
+  margin-bottom: .875rem;
+}
+
+.profile-card__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  width: 100%;
+  height: 2.375rem;
+  background: var(--color-primary-subtle);
+  border: 1px dashed var(--color-primary);
+  border-radius: var(--radius);
+  font-size: .875rem;
+  color: var(--color-primary);
+  font-weight: 500;
+  transition: background .15s;
+}
+.profile-card__cta:hover { background: hsla(16, 85%, 58%, .14); }
+.profile-card__cta svg   { width: .875rem; height: .875rem; }
+
+/* =============================================================
+   Ações (salvar / pular)
+   ============================================================= */
+.profile-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 780px;
+  margin-top: 1.75rem;
+}
+
+.btn-skip {
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: .875rem;
+  color: var(--color-muted-fg);
+  cursor: pointer;
+  padding: 0;
+  transition: color .15s;
+}
+.btn-skip:hover { color: var(--color-primary); }
+
+.btn-save {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: 0 1.75rem;
+  height: 2.75rem;
+  background: var(--color-primary);
+  color: var(--color-primary-fg);
+  border: none;
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: .9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: var(--shadow-btn);
+  transition: background .2s, transform .1s;
+}
+.btn-save:hover  { background: var(--color-primary-hover); }
+.btn-save:active { transform: scale(.98); }
+.btn-save svg    { width: 1rem; height: 1rem; }
