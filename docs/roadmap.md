@@ -88,6 +88,7 @@
 
 ## 💡 Futuro
 
+- [ ] Página de detalhes do destino do usuário (atualmente só existe para destinos em destaque do superusuário — criar versão para destinos do catálogo pessoal)
 - [ ] App mobile (iOS e Android)
 - [ ] Integração com Google Maps (mapa dos destinos)
 - [ ] Notificações de melhores épocas para visitar
