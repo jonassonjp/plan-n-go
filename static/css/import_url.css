@@ -1,0 +1,130 @@
+/* =============================================================
+   Plan N'Go — Importação por URL
+   ============================================================= */
+
+/* Tabs do modal */
+.modal-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid hsl(35,20%,88%);
+  padding: 0 1.5rem;
+  flex-shrink: 0;
+}
+
+.modal-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.875rem 1rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: hsl(20,10%,50%);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+}
+.modal-tab:hover            { color: hsl(20,20%,15%); }
+.modal-tab--active          { color: hsl(16,85%,58%); border-bottom-color: hsl(16,85%,58%); }
+.modal-tab svg              { flex-shrink: 0; }
+
+/* Box de importação */
+.import-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2rem 1rem;
+  gap: 0.875rem;
+}
+
+.import-box__icon {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: hsla(16,85%,58%,.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.import-box__icon svg  { width: 2rem; height: 2rem; color: hsl(16,85%,58%); }
+
+.import-box__title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: hsl(20,20%,15%);
+}
+
+.import-box__desc {
+  font-size: 0.9rem;
+  color: hsl(20,10%,45%);
+  line-height: 1.6;
+  max-width: 28rem;
+}
+
+.import-url-row {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 32rem;
+}
+
+.import-url-row .app-input { flex: 1; }
+
+.btn-import {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0 1.25rem;
+  height: 2.625rem;
+  background: hsl(16,85%,58%);
+  color: white;
+  border: none;
+  border-radius: var(--radius, 0.75rem);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.btn-import:hover    { background: hsl(16,85%,50%); }
+.btn-import:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Status da importação */
+.import-status {
+  width: 100%;
+  max-width: 32rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  text-align: left;
+}
+.import-status--loading {
+  background: hsla(35,30%,92%,0.8);
+  color: hsl(20,15%,35%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.import-status--success {
+  background: hsla(158,64%,40%,.1);
+  border: 1px solid hsla(158,64%,40%,.3);
+  color: hsl(158,64%,30%);
+}
+.import-status--error {
+  background: hsla(0,84%,60%,.1);
+  border: 1px solid hsla(0,84%,60%,.3);
+  color: hsl(0,72%,40%);
+}
+
+.import-box__note {
+  font-size: 0.75rem;
+  color: hsl(20,10%,60%);
+}
