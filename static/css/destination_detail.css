@@ -24,6 +24,7 @@
   min-width: 0;
   text-decoration: none;
   color: inherit;
+  display: block;
 }
 
 @media (max-width: 1024px) {
@@ -84,10 +85,11 @@
   border-radius: 0.25rem;
 }
 
-/* Cards clicáveis no carrossel */
-.carousel__track .polaroid {
+/* Cards clicáveis na landing page (places-grid estático) */
+.places-grid a.polaroid {
   text-decoration: none;
   color: inherit;
+  display: block;
 }
 
 /* -------------------------------------------------------------
@@ -131,7 +133,6 @@
 }
 .polaroid-card__icon-btn--delete:hover { background: hsl(0,72%,50%); }
 
-/* Remover botões antigos de hover */
 .polaroid-card__actions { display: none !important; }
 
 /* -------------------------------------------------------------
