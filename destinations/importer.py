@@ -1,6 +1,6 @@
 """
 Plan N'Go — Serviço de importação por URL
-Suporta: Instagram (páginas públicas)
+Suporta: blogs, sites de viagem, TripAdvisor, Booking, etc.
 Fluxo: scraping → Claude API → dados estruturados
 """
 
@@ -22,16 +22,31 @@ HEADERS = {
         "Chrome/120.0.0.0 Safari/537.36"
     ),
     "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 }
+
+# Sites que funcionam bem
+SUPPORTED_DOMAINS = [
+    "tripadvisor", "booking.com", "expedia", "timeout",
+    "viajabi", "mochileiros", "malucos", "dicasdeviagem",
+    "viagemeturismo", "melhoresdestinos", "viajeaqui",
+    "guiaviajem", "blogdeviagem", "vivadecay", "turistando",
+    "wordpress", "blogspot", "medium", "substack",
+]
 
 
 def scrape_url(url: str) -> dict:
     """
     Faz scraping da URL e retorna o conteúdo textual extraído.
-    Retorna: { "url", "text", "title", "image_url", "source_type" }
     """
     url = url.strip()
-    source_type = _detect_source(url)
+
+    # Bloquear Instagram
+    if "instagram.com" in url:
+        raise ScrapingError(
+            "O Instagram não permite extração automática de conteúdo. "
+            "Use a opção de texto livre para colar a legenda manualmente."
+        )
 
     try:
         response = requests.get(url, headers=HEADERS, timeout=10)
@@ -41,73 +56,22 @@ def scrape_url(url: str) -> dict:
 
     soup = BeautifulSoup(response.text, "html.parser")
 
-    if source_type == "instagram":
-        return _scrape_instagram(url, soup)
-    else:
-        return _scrape_generic(url, soup)
+    # Remover scripts, estilos e navegação
+    for tag in soup(["script", "style", "nav", "header", "footer",
+                     "aside", "form", "button", "iframe"]):
+        tag.decompose()
 
-
-def _detect_source(url: str) -> str:
-    if "instagram.com" in url:
-        return "instagram"
-    if "tripadvisor.com" in url or "tripadvisor.com.br" in url:
-        return "tripadvisor"
-    return "generic"
-
-
-def _scrape_instagram(url: str, soup: BeautifulSoup) -> dict:
-    """Extrai dados de post público do Instagram."""
-    text_parts = []
-    image_url  = ""
-
-    # Meta tags (mais confiável no Instagram)
-    og_desc = soup.find("meta", property="og:description")
-    og_title = soup.find("meta", property="og:title")
-    og_image = soup.find("meta", property="og:image")
-
-    if og_desc and og_desc.get("content"):
-        text_parts.append(og_desc["content"])
-    if og_title and og_title.get("content"):
-        text_parts.append(og_title["content"])
-    if og_image and og_image.get("content"):
-        image_url = og_image["content"]
-
-    # Fallback: script tags com dados JSON
-    for script in soup.find_all("script", type="application/ld+json"):
-        try:
-            data = json.loads(script.string or "")
-            if isinstance(data, dict):
-                caption = data.get("caption") or data.get("description") or ""
-                if caption:
-                    text_parts.append(caption)
-        except (json.JSONDecodeError, AttributeError):
-            pass
-
-    text = " ".join(text_parts).strip()
-
-    if not text:
-        raise ScrapingError(
-            "Não foi possível extrair conteúdo do post. "
-            "Verifique se o perfil é público e a URL está correta."
-        )
-
-    return {
-        "url":         url,
-        "text":        text,
-        "title":       og_title["content"] if og_title else "",
-        "image_url":   image_url,
-        "source_type": "instagram",
-    }
+    return _scrape_generic(url, soup)
 
 
 def _scrape_generic(url: str, soup: BeautifulSoup) -> dict:
-    """Extrai dados de blog ou site genérico."""
+    """Extrai dados de blog ou site de viagem."""
     text_parts = []
     image_url  = ""
 
-    # Meta tags
-    og_desc  = soup.find("meta", property="og:description")
+    # Meta tags OG (mais ricas)
     og_title = soup.find("meta", property="og:title")
+    og_desc  = soup.find("meta", property="og:description")
     og_image = soup.find("meta", property="og:image")
     meta_desc = soup.find("meta", attrs={"name": "description"})
 
@@ -120,31 +84,70 @@ def _scrape_generic(url: str, soup: BeautifulSoup) -> dict:
     if og_image and og_image.get("content"):
         image_url = og_image["content"]
 
-    # Título da página
-    if soup.title:
-        text_parts.append(soup.title.string or "")
+    # Título H1
+    h1 = soup.find("h1")
+    if h1:
+        text_parts.append(h1.get_text(strip=True))
 
-    # Parágrafos principais do artigo
-    article = soup.find("article") or soup.find("main") or soup.find("body")
-    if article:
-        paragraphs = article.find_all("p")
-        text_parts.extend(
-            p.get_text(strip=True)
-            for p in paragraphs[:10]
-            if len(p.get_text(strip=True)) > 40
+    # Subtítulos H2
+    for h2 in soup.find_all("h2")[:5]:
+        t = h2.get_text(strip=True)
+        if t:
+            text_parts.append(t)
+
+    # Conteúdo principal — tenta article, main, div com classe de conteúdo
+    main_content = (
+        soup.find("article") or
+        soup.find("main") or
+        soup.find(class_=re.compile(r"(post|content|article|entry|texto|conteudo)", re.I)) or
+        soup.find("body")
+    )
+
+    if main_content:
+        paragraphs = main_content.find_all("p")
+        for p in paragraphs[:20]:
+            t = p.get_text(strip=True)
+            if len(t) > 50:
+                text_parts.append(t)
+
+    text = " ".join(text_parts).strip()
+
+    # Limitar para não exceder contexto do Claude
+    text = text[:4000]
+
+    if not text or len(text) < 50:
+        raise ScrapingError(
+            "Não foi possível extrair conteúdo da página. "
+            "Verifique se a URL está correta e tente novamente."
         )
-
-    text = " ".join(text_parts).strip()[:4000]  # Limitar para Claude
-
-    if not text:
-        raise ScrapingError("Não foi possível extrair conteúdo da página.")
 
     return {
         "url":         url,
         "text":        text,
-        "title":       og_title["content"] if og_title else "",
+        "title":       og_title["content"] if og_title and og_title.get("content") else "",
         "image_url":   image_url,
-        "source_type": "generic",
+        "source_type": "web",
+    }
+
+
+# =============================================================
+# Texto livre (fallback manual)
+# =============================================================
+
+def scrape_from_text(text: str, url: str = "") -> dict:
+    """
+    Permite o usuário colar o texto diretamente (legenda, descrição, etc.)
+    em vez de uma URL.
+    """
+    if not text or len(text.strip()) < 20:
+        raise ScrapingError("O texto é muito curto para identificar um destino.")
+
+    return {
+        "url":         url,
+        "text":        text.strip()[:4000],
+        "title":       "",
+        "image_url":   "",
+        "source_type": "text",
     }
 
 
@@ -155,12 +158,10 @@ def _scrape_generic(url: str, soup: BeautifulSoup) -> dict:
 SYSTEM_PROMPT = """Você é um assistente especializado em viagens.
 Analise o texto fornecido e extraia informações sobre destinos de viagem.
 Responda APENAS com um objeto JSON válido, sem texto antes ou depois, sem markdown.
-
 Se não tiver certeza sobre algum campo, use null.
-Para campos de lista, use array vazio [] se não encontrar informação.
-"""
+Para campos de lista, use array vazio [] se não encontrar informação."""
 
-EXTRACTION_PROMPT = """Analise este texto de uma publicação sobre viagem e extraia as informações do destino mencionado.
+EXTRACTION_PROMPT = """Analise este texto sobre viagem e extraia as informações do destino principal.
 
 Texto:
 {text}
@@ -169,38 +170,34 @@ URL de origem: {url}
 
 Retorne um JSON com exatamente esta estrutura:
 {{
-  "name": "nome do local/destino principal mencionado",
+  "name": "nome do local/destino principal",
   "country": "país em português (ex: Peru, Japão, França)",
   "continent": "continente em português (ex: América do Sul, Ásia, Europa)",
-  "description": "descrição do destino extraída ou resumida do texto (máx 300 chars)",
+  "description": "descrição resumida do destino extraída do texto (máx 300 chars)",
   "languages": ["idioma1", "idioma2"],
   "currency": "código da moeda (ex: BRL, USD, EUR, JPY)",
-  "best_months": [lista de números 1-12 dos melhores meses mencionados ou típicos],
+  "best_months": [lista de números 1-12 dos melhores meses],
   "visa_required": true/false/null,
-  "visa_type": "tipo de visto se mencionado",
+  "visa_type": "tipo de visto se mencionado ou null",
   "vaccination_required": true/false/null,
-  "vaccines": ["vacina1", "vacina2"],
-  "vaccines_notes": "observações sobre vacinas",
-  "other_requirements_title": "outra exigência se mencionada (ex: ETIAS)",
-  "other_requirements_description": "descrição da exigência",
+  "vaccines": ["vacina1"],
+  "vaccines_notes": "observações sobre vacinas ou vazio",
+  "other_requirements_title": "outra exigência ou vazio",
+  "other_requirements_description": "descrição da exigência ou vazio",
   "confidence": "high/medium/low",
-  "extraction_notes": "observações sobre a extração"
+  "extraction_notes": "o que foi identificado e o que ficou incerto"
 }}
 
 Vacinas válidas: febre_amarela, covid, hepatite_a, hepatite_b, tifoide, colera, meningite, raiva, encefalite, poliomielite, outra
-Idiomas válidos: Português, Inglês, Espanhol, Francês, Alemão, Italiano, Japonês, Mandarim, Coreano, Árabe, Hindi, Russo, Grego, Holandês, Sueco, Tailandês, Vietnamita, Indonésio
-"""
+Idiomas válidos: Português, Inglês, Espanhol, Francês, Alemão, Italiano, Japonês, Mandarim, Coreano, Árabe, Hindi, Russo, Grego, Holandês, Sueco, Tailandês, Vietnamita, Indonésio"""
 
 
 def extract_with_claude(scraped: dict) -> dict:
-    """
-    Envia o texto extraído para o Claude e retorna os dados estruturados.
-    """
     client = Anthropic()
 
     prompt = EXTRACTION_PROMPT.format(
         text=scraped["text"][:3000],
-        url=scraped["url"],
+        url=scraped.get("url", ""),
     )
 
     message = client.messages.create(
@@ -211,8 +208,6 @@ def extract_with_claude(scraped: dict) -> dict:
     )
 
     raw = message.content[0].text.strip()
-
-    # Limpar possíveis backticks de markdown
     raw = re.sub(r"^```json\s*", "", raw)
     raw = re.sub(r"^```\s*",     "", raw)
     raw = re.sub(r"\s*```$",     "", raw)
@@ -220,28 +215,29 @@ def extract_with_claude(scraped: dict) -> dict:
     try:
         data = json.loads(raw)
     except json.JSONDecodeError as e:
-        raise ExtractionError(f"Claude retornou JSON inválido: {e}\n{raw}")
+        raise ExtractionError(f"Resposta inválida do Claude: {e}")
 
-    # Adicionar imagem e URL de origem
-    if scraped.get("image_url") and not data.get("image_url"):
+    if scraped.get("image_url"):
         data["image_url"] = scraped["image_url"]
-    data["source_url"] = scraped["url"]
+    data["source_url"] = scraped.get("url", "")
 
     return data
 
 
 # =============================================================
-# Pipeline principal
+# Pipelines principais
 # =============================================================
 
 def import_from_url(url: str) -> dict:
-    """
-    Pipeline completo: URL → scraping → Claude → dados estruturados.
-    Retorna dict pronto para pré-preencher o modal de destino.
-    """
+    """URL → scraping → Claude → dados estruturados."""
     scraped = scrape_url(url)
-    data    = extract_with_claude(scraped)
-    return data
+    return extract_with_claude(scraped)
+
+
+def import_from_text(text: str, url: str = "") -> dict:
+    """Texto livre → Claude → dados estruturados."""
+    scraped = scrape_from_text(text, url)
+    return extract_with_claude(scraped)
 
 
 # =============================================================

@@ -227,8 +227,57 @@ def delete(request, pk):
     return redirect("destinations:dashboard")
 
 
-# =============================================================
-# Importar destino por URL
+"""
+Plan N'Go — View de importação por URL ou texto livre
+Adicionar/substituir em destinations/views.py
+"""
+
+
+@login_required
+@require_POST
+def import_url_view(request):
+    """
+    Endpoint AJAX para importar destino por URL ou texto livre.
+    POST /destinations/import-url/
+    Body: { "url": "...", "text": "..." }
+    """
+    import json as _json
+    from .importer import (import_from_url, import_from_text,
+                           ScrapingError, ExtractionError)
+    from django.conf import settings
+
+    try:
+        body = _json.loads(request.body)
+        url  = body.get("url",  "").strip()
+        text = body.get("text", "").strip()
+    except Exception:
+        return JsonResponse({"error": "Requisição inválida."}, status=400)
+
+    if not url and not text:
+        return JsonResponse({"error": "Informe uma URL ou cole um texto."}, status=400)
+
+    if not getattr(settings, "ANTHROPIC_API_KEY", ""):
+        return JsonResponse(
+            {"error": "ANTHROPIC_API_KEY não configurada no .env."},
+            status=500
+        )
+
+    try:
+        if text:
+            data = import_from_text(text, url)
+        else:
+            data = import_from_url(url)
+        return JsonResponse({"success": True, "data": data})
+
+    except ScrapingError as e:
+        return JsonResponse({"error": str(e)}, status=422)
+    except ExtractionError:
+        return JsonResponse(
+            {"error": "Não foi possível identificar o destino no conteúdo."},
+            status=422
+        )
+    except Exception as e:
+        return JsonResponse({"error": "Erro inesperado. Tente novamente."}, status=500)
 # =============================================================
 
 @login_required
