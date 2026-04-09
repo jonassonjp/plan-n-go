@@ -1,0 +1,74 @@
+name: Testes de Aceitação (E2E)
+
+on:
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  acceptance:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Instalar dependências Python
+        run: pip install -r requirements-dev.txt
+
+      - name: Instalar Playwright e browsers
+        run: |
+          pip install pytest-playwright
+          playwright install chromium --with-deps
+
+      - name: Copiar .env de exemplo
+        run: cp .env.example .env
+
+      - name: Aplicar migrações e criar usuário de teste
+        run: |
+          python manage.py migrate --no-input
+          python manage.py shell -c "
+          from django.contrib.auth import get_user_model
+          User = get_user_model()
+          if not User.objects.filter(email='teste@plango.app').exists():
+              User.objects.create_user(
+                  email='teste@plango.app',
+                  name='Usuário Teste',
+                  password='senha@1234',
+                  is_active=True,
+                  email_verified=True,
+              )
+          "
+        env:
+          SECRET_KEY: "ci-secret-key-nao-usar-em-producao"
+          DEBUG: "True"
+
+      - name: Iniciar servidor Django em background
+        run: |
+          python manage.py runserver 8000 &
+          sleep 3
+        env:
+          SECRET_KEY: "ci-secret-key-nao-usar-em-producao"
+          DEBUG: "True"
+
+      - name: Rodar testes de aceitação
+        run: python -m pytest tests/acceptance/ -v --screenshot=on --video=on
+        env:
+          SECRET_KEY: "ci-secret-key-nao-usar-em-producao"
+          DEBUG: "True"
+          BASE_URL: "http://localhost:8000"
+
+      - name: Upload de screenshots e vídeos de falhas
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: test-results/
+          retention-days: 7
