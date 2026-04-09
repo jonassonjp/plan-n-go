@@ -1,6 +1,6 @@
 """
-Plan N'Go — Busca de imagem via Google Custom Search API
-Usado para buscar automaticamente uma foto do destino.
+Plan N'Go — Busca de imagem via Unsplash API
+Gratuito: 50 buscas/hora sem billing.
 """
 
 import requests
@@ -9,38 +9,32 @@ from django.conf import settings
 
 def search_destination_image(destination_name: str, country: str = "") -> str:
     """
-    Busca uma imagem do destino via Google Custom Search API.
+    Busca uma imagem do destino via Unsplash API.
     Retorna a URL da primeira imagem encontrada ou string vazia.
     """
-    api_key = getattr(settings, "GOOGLE_CUSTOM_SEARCH_KEY", "")
-    cx      = getattr(settings, "GOOGLE_CUSTOM_SEARCH_CX", "")
+    api_key = getattr(settings, "UNSPLASH_ACCESS_KEY", "")
 
-    if not api_key or not cx:
+    if not api_key:
         return ""
 
-    query = f"{destination_name} {country} travel landscape".strip()
+    query = f"{destination_name} {country} travel".strip()
 
     try:
         response = requests.get(
-            "https://www.googleapis.com/customsearch/v1",
+            "https://api.unsplash.com/search/photos",
             params={
-                "key":        api_key,
-                "cx":         cx,
-                "q":          query,
-                "searchType": "image",
-                "num":        1,
-                "imgSize":    "LARGE",
-                "imgType":    "photo",
-                "safe":       "active",
+                "query":       query,
+                "per_page":    1,
+                "orientation": "landscape",
             },
+            headers={"Authorization": f"Client-ID {api_key}"},
             timeout=8,
         )
         response.raise_for_status()
-        data  = response.json()
-        items = data.get("items", [])
+        results = response.json().get("results", [])
 
-        if items:
-            return items[0].get("link", "")
+        if results:
+            return results[0]["urls"]["regular"]
 
     except Exception:
         pass

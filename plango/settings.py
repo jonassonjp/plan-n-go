@@ -14,6 +14,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Carrega variáveis do arquivo .env
 load_dotenv(BASE_DIR / ".env")
+# IA Backend
+AI_BACKEND       = os.environ.get("AI_BACKEND", "gemini")
+GEMINI_API_KEY            = os.environ.get("GEMINI_API_KEY", "")
+GOOGLE_CUSTOM_SEARCH_KEY  = os.environ.get("GOOGLE_CUSTOM_SEARCH_KEY", "")
+UNSPLASH_ACCESS_KEY       = os.environ.get("UNSPLASH_ACCESS_KEY", "")
+GOOGLE_CUSTOM_SEARCH_CX   = os.environ.get("GOOGLE_CUSTOM_SEARCH_CX", "")
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+
 
 # =============================================================================
 # Segurança

@@ -1,15 +1,17 @@
 """
 Plan N'Go — Serviço de importação por URL
-Suporta: blogs, sites de viagem, TripAdvisor, Booking, etc.
-Fluxo: scraping → Claude API → dados estruturados
+Suporta dois backends de IA: Gemini (gratuito) e Anthropic (pago).
+
+Configuração no .env:
+  AI_BACKEND=gemini     # padrão, gratuito, 1500 req/dia
+  AI_BACKEND=anthropic  # pago, mais preciso
 """
 
 import re
 import json
 import requests
 from bs4 import BeautifulSoup
-from anthropic import Anthropic
-from .image_search import search_destination_image
+from django.conf import settings
 
 
 # =============================================================
@@ -26,23 +28,10 @@ HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 }
 
-# Sites que funcionam bem
-SUPPORTED_DOMAINS = [
-    "tripadvisor", "booking.com", "expedia", "timeout",
-    "viajabi", "mochileiros", "malucos", "dicasdeviagem",
-    "viagemeturismo", "melhoresdestinos", "viajeaqui",
-    "guiaviajem", "blogdeviagem", "vivadecay", "turistando",
-    "wordpress", "blogspot", "medium", "substack",
-]
-
 
 def scrape_url(url: str) -> dict:
-    """
-    Faz scraping da URL e retorna o conteúdo textual extraído.
-    """
     url = url.strip()
 
-    # Bloquear Instagram
     if "instagram.com" in url:
         raise ScrapingError(
             "O Instagram não permite extração automática de conteúdo. "
@@ -57,7 +46,6 @@ def scrape_url(url: str) -> dict:
 
     soup = BeautifulSoup(response.text, "html.parser")
 
-    # Remover scripts, estilos e navegação
     for tag in soup(["script", "style", "nav", "header", "footer",
                      "aside", "form", "button", "iframe"]):
         tag.decompose()
@@ -66,14 +54,12 @@ def scrape_url(url: str) -> dict:
 
 
 def _scrape_generic(url: str, soup: BeautifulSoup) -> dict:
-    """Extrai dados de blog ou site de viagem."""
     text_parts = []
     image_url  = ""
 
-    # Meta tags OG (mais ricas)
-    og_title = soup.find("meta", property="og:title")
-    og_desc  = soup.find("meta", property="og:description")
-    og_image = soup.find("meta", property="og:image")
+    og_title  = soup.find("meta", property="og:title")
+    og_desc   = soup.find("meta", property="og:description")
+    og_image  = soup.find("meta", property="og:image")
     meta_desc = soup.find("meta", attrs={"name": "description"})
 
     if og_title and og_title.get("content"):
@@ -85,18 +71,15 @@ def _scrape_generic(url: str, soup: BeautifulSoup) -> dict:
     if og_image and og_image.get("content"):
         image_url = og_image["content"]
 
-    # Título H1
     h1 = soup.find("h1")
     if h1:
         text_parts.append(h1.get_text(strip=True))
 
-    # Subtítulos H2
     for h2 in soup.find_all("h2")[:5]:
         t = h2.get_text(strip=True)
         if t:
             text_parts.append(t)
 
-    # Conteúdo principal — tenta article, main, div com classe de conteúdo
     main_content = (
         soup.find("article") or
         soup.find("main") or
@@ -105,16 +88,12 @@ def _scrape_generic(url: str, soup: BeautifulSoup) -> dict:
     )
 
     if main_content:
-        paragraphs = main_content.find_all("p")
-        for p in paragraphs[:20]:
+        for p in main_content.find_all("p")[:20]:
             t = p.get_text(strip=True)
             if len(t) > 50:
                 text_parts.append(t)
 
-    text = " ".join(text_parts).strip()
-
-    # Limitar para não exceder contexto do Claude
-    text = text[:4000]
+    text = " ".join(text_parts).strip()[:4000]
 
     if not text or len(text) < 50:
         raise ScrapingError(
@@ -131,18 +110,9 @@ def _scrape_generic(url: str, soup: BeautifulSoup) -> dict:
     }
 
 
-# =============================================================
-# Texto livre (fallback manual)
-# =============================================================
-
 def scrape_from_text(text: str, url: str = "") -> dict:
-    """
-    Permite o usuário colar o texto diretamente (legenda, descrição, etc.)
-    em vez de uma URL.
-    """
     if not text or len(text.strip()) < 20:
         raise ScrapingError("O texto é muito curto para identificar um destino.")
-
     return {
         "url":         url,
         "text":        text.strip()[:4000],
@@ -153,14 +123,12 @@ def scrape_from_text(text: str, url: str = "") -> dict:
 
 
 # =============================================================
-# Claude API — extração estruturada
+# Prompt compartilhado
 # =============================================================
 
 SYSTEM_PROMPT = """Você é um assistente especializado em viagens.
 Analise o texto fornecido e extraia informações sobre destinos de viagem.
-Responda APENAS com um objeto JSON válido, sem texto antes ou depois, sem markdown.
-Se não tiver certeza sobre algum campo, use null.
-Para campos de lista, use array vazio [] se não encontrar informação."""
+Responda APENAS com um objeto JSON válido, sem texto antes ou depois, sem markdown."""
 
 EXTRACTION_PROMPT = """Analise este texto sobre viagem e extraia as informações do destino principal.
 
@@ -174,7 +142,7 @@ Retorne um JSON com exatamente esta estrutura:
   "name": "nome do local/destino principal",
   "country": "país em português (ex: Peru, Japão, França)",
   "continent": "continente em português (ex: América do Sul, Ásia, Europa)",
-  "description": "descrição resumida do destino extraída do texto (máx 300 chars)",
+  "description": "descrição resumida do destino (máx 300 chars)",
   "languages": ["idioma1", "idioma2"],
   "currency": "código da moeda (ex: BRL, USD, EUR, JPY)",
   "best_months": [lista de números 1-12 dos melhores meses],
@@ -193,9 +161,62 @@ Vacinas válidas: febre_amarela, covid, hepatite_a, hepatite_b, tifoide, colera,
 Idiomas válidos: Português, Inglês, Espanhol, Francês, Alemão, Italiano, Japonês, Mandarim, Coreano, Árabe, Hindi, Russo, Grego, Holandês, Sueco, Tailandês, Vietnamita, Indonésio"""
 
 
-def extract_with_claude(scraped: dict) -> dict:
-    client = Anthropic()
+def _parse_json(raw: str) -> dict:
+    """Limpa e parseia JSON retornado pela IA."""
+    raw = re.sub(r"^```json\s*", "", raw.strip())
+    raw = re.sub(r"^```\s*",     "", raw)
+    raw = re.sub(r"\s*```$",     "", raw)
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError as e:
+        raise ExtractionError(f"Resposta JSON inválida: {e}")
 
+
+# =============================================================
+# Backend Gemini (gratuito — padrão)
+# =============================================================
+
+def _extract_with_gemini(scraped: dict) -> dict:
+    """Usa Google Gemini para extrair dados do destino."""
+    api_key = getattr(settings, "GEMINI_API_KEY", "")
+    if not api_key:
+        raise ExtractionError("GEMINI_API_KEY não configurada no .env.")
+
+    prompt = SYSTEM_PROMPT + "\n\n" + EXTRACTION_PROMPT.format(
+        text=scraped["text"][:3000],
+        url=scraped.get("url", ""),
+    )
+
+    response = requests.post(
+        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}",
+        json={
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {
+                "temperature":     0.1,
+                "maxOutputTokens": 2000,
+            },
+        },
+        timeout=30,
+    )
+
+    if response.status_code != 200:
+        raise ExtractionError(f"Erro na API Gemini: {response.status_code} — {response.text[:200]}")
+
+    data     = response.json()
+    raw_text = data["candidates"][0]["content"]["parts"][0]["text"]
+
+    return _parse_json(raw_text)
+
+
+# =============================================================
+# Backend Anthropic (pago — opcional)
+# =============================================================
+
+def _extract_with_anthropic(scraped: dict) -> dict:
+    """Usa Anthropic Claude para extrair dados do destino."""
+    from anthropic import Anthropic
+
+    client = Anthropic()
     prompt = EXTRACTION_PROMPT.format(
         text=scraped["text"][:3000],
         url=scraped.get("url", ""),
@@ -208,31 +229,47 @@ def extract_with_claude(scraped: dict) -> dict:
         messages=[{"role": "user", "content": prompt}],
     )
 
-    raw = message.content[0].text.strip()
-    raw = re.sub(r"^```json\s*", "", raw)
-    raw = re.sub(r"^```\s*",     "", raw)
-    raw = re.sub(r"\s*```$",     "", raw)
+    return _parse_json(message.content[0].text)
 
-    try:
-        data = json.loads(raw)
-    except json.JSONDecodeError as e:
-        raise ExtractionError(f"Resposta inválida do Claude: {e}")
 
-    # Usar imagem do scraping se disponível
+# =============================================================
+# Factory — seleciona backend pelo .env
+# =============================================================
+
+def extract_with_ai(scraped: dict) -> dict:
+    """
+    Extrai dados do destino usando o backend configurado em AI_BACKEND.
+    Padrão: gemini
+    """
+    backend = getattr(settings, "AI_BACKEND", "gemini").lower()
+
+    if backend == "anthropic":
+        data = _extract_with_anthropic(scraped)
+    else:
+        data = _extract_with_gemini(scraped)
+
+    # Buscar imagem automaticamente se não houver
     if scraped.get("image_url"):
         data["image_url"] = scraped["image_url"]
     else:
-        # Buscar imagem via Google Custom Search
-        name    = data.get("name", "")
-        country = data.get("country", "")
-        if name:
-            img_url = search_destination_image(name, country)
-            if img_url:
-                data["image_url"] = img_url
+        try:
+            from .image_search import search_destination_image
+            name    = data.get("name", "")
+            country = data.get("country", "")
+            if name:
+                img_url = search_destination_image(name, country)
+                if img_url:
+                    data["image_url"] = img_url
+        except Exception:
+            pass
 
     data["source_url"] = scraped.get("url", "")
-
     return data
+
+
+# Manter compatibilidade com código existente
+def extract_with_claude(scraped: dict) -> dict:
+    return extract_with_ai(scraped)
 
 
 # =============================================================
@@ -240,15 +277,13 @@ def extract_with_claude(scraped: dict) -> dict:
 # =============================================================
 
 def import_from_url(url: str) -> dict:
-    """URL → scraping → Claude → dados estruturados."""
     scraped = scrape_url(url)
-    return extract_with_claude(scraped)
+    return extract_with_ai(scraped)
 
 
 def import_from_text(text: str, url: str = "") -> dict:
-    """Texto livre → Claude → dados estruturados."""
     scraped = scrape_from_text(text, url)
-    return extract_with_claude(scraped)
+    return extract_with_ai(scraped)
 
 
 # =============================================================
