@@ -1,0 +1,352 @@
+{% extends "plango/base.html" %}
+{% load static %}
+
+{% block title %}Minhas Listas — Plan N'Go{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/app.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/lists.css' %}" />
+{% endblock %}
+
+{% block body %}
+  {% include "components/app_navbar.html" %}
+
+  <main class="app-main">
+    <div class="container">
+
+      <!-- Cabeçalho -->
+      <div class="dash-header">
+        <div class="dash-header__left">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+          <h1>Minhas Listas</h1>
+          <span class="dash-count">
+            {{ lists_with_count|length }}
+            {{ lists_with_count|length|pluralize:"lista,listas" }}
+          </span>
+        </div>
+        <button class="btn-primary" onclick="openCreateModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Nova Lista
+        </button>
+      </div>
+
+      <!-- Alertas -->
+      {% for message in messages %}
+        <div class="app-alert app-alert--{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+
+      <!-- Grid de listas -->
+      {% if lists_with_count %}
+        <div class="lists-grid">
+          {% for item in lists_with_count %}
+            {% with lst=item.list %}
+            <a href="{% url 'lists:detail' lst.pk %}" class="list-card">
+
+              <!-- Cabeçalho da card -->
+              <div class="list-card__header">
+                <span class="list-card__emoji">{{ lst.emoji }}</span>
+                <div class="list-card__meta">
+                  {% if lst.is_smart %}
+                    <span class="list-card__badge list-card__badge--smart">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02
+                                         12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                      </svg>
+                      Inteligente
+                    </span>
+                  {% else %}
+                    <span class="list-card__badge list-card__badge--manual">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <line x1="8" y1="6" x2="21" y2="6"/>
+                        <line x1="8" y1="12" x2="21" y2="12"/>
+                        <line x1="8" y1="18" x2="21" y2="18"/>
+                        <line x1="3" y1="6" x2="3.01" y2="6"/>
+                        <line x1="3" y1="12" x2="3.01" y2="12"/>
+                        <line x1="3" y1="18" x2="3.01" y2="18"/>
+                      </svg>
+                      Manual
+                    </span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Nome e descrição -->
+              <h3 class="list-card__name">{{ lst.name }}</h3>
+              {% if lst.description %}
+                <p class="list-card__desc">{{ lst.description|truncatechars:70 }}</p>
+              {% endif %}
+
+              <!-- Preview de fotos -->
+              {% if item.preview %}
+                <div class="list-card__photos">
+                  {% for dest in item.preview %}
+                    <div class="list-card__photo-thumb">
+                      {% if dest.photo %}
+                        <img src="{{ dest.photo }}" alt="{{ dest.name }}" loading="lazy" />
+                      {% else %}
+                        <div class="list-card__photo-empty">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                          </svg>
+                        </div>
+                      {% endif %}
+                    </div>
+                  {% endfor %}
+                  {% if item.count > 3 %}
+                    <div class="list-card__photo-more">+{{ item.count|add:"-3" }}</div>
+                  {% endif %}
+                </div>
+              {% endif %}
+
+              <!-- Rodapé -->
+              <div class="list-card__footer">
+                <span class="list-card__count">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  {{ item.count }} {{ item.count|pluralize:"destino,destinos" }}
+                </span>
+                <span class="list-card__arrow">→</span>
+              </div>
+
+            </a>
+            {% endwith %}
+          {% endfor %}
+
+          <!-- Card "Nova Lista" -->
+          <button class="list-card list-card--new" onclick="openCreateModal()">
+            <div class="list-card__new-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </div>
+            <span>Nova Lista</span>
+          </button>
+        </div>
+
+      {% else %}
+        <!-- Estado vazio -->
+        <div class="dash-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+          <h2>Nenhuma lista ainda</h2>
+          <p>Organize seus destinos em listas temáticas ou inteligentes.</p>
+          <button class="btn-primary" onclick="openCreateModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Criar primeira lista
+          </button>
+        </div>
+      {% endif %}
+
+    </div>
+  </main>
+
+  <!-- ── Modal: Nova Lista ──────────────────────────────────────────── -->
+  <div id="createModal" class="modal-overlay" role="dialog" aria-modal="true"
+       aria-labelledby="createModalTitle" hidden>
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title" id="createModalTitle">Nova Lista</h2>
+        <button class="modal-close" onclick="closeCreateModal()" aria-label="Fechar">&times;</button>
+      </div>
+
+      <form method="post" action="{% url 'lists:create' %}">
+        {% csrf_token %}
+
+        <!-- Tipo de lista -->
+        <div class="modal-field">
+          <label class="app-label">Tipo de lista</label>
+          <div class="list-type-toggle" id="listTypeToggle">
+            <button type="button" class="list-type-btn list-type-btn--active"
+              data-type="manual" onclick="setListType('manual')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+                <line x1="8" y1="18" x2="21" y2="18"/>
+              </svg>
+              Manual
+            </button>
+            <button type="button" class="list-type-btn"
+              data-type="smart" onclick="setListType('smart')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02
+                                 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+              Inteligente
+            </button>
+          </div>
+          <input type="hidden" name="list_type" id="listTypeInput" value="manual" />
+          <span class="app-hint" id="listTypeHint">
+            Você escolhe manualmente quais destinos entram na lista.
+          </span>
+        </div>
+
+        <!-- Emoji + Nome -->
+        <div class="modal-field">
+          <label class="app-label" for="createName">Nome</label>
+          <div class="list-name-row">
+            <div class="emoji-picker-wrap">
+              <button type="button" class="emoji-btn" id="emojiBtn"
+                onclick="toggleEmojiPicker()" title="Escolher emoji">📍</button>
+              <input type="hidden" name="emoji" id="emojiInput" value="📍" />
+              <div class="emoji-picker" id="emojiPicker" hidden>
+                {% for e in emojis %}
+                  <button type="button" class="emoji-option"
+                    onclick="selectEmoji('{{ e }}')">{{ e }}</button>
+                {% endfor %}
+              </div>
+            </div>
+            <input type="text" name="name" id="createName" class="app-input"
+              placeholder="Ex: Praias dos Sonhos" required maxlength="200" />
+          </div>
+        </div>
+
+        <!-- Descrição -->
+        <div class="modal-field">
+          <label class="app-label" for="createDesc">Descrição <span style="font-weight:400;color:var(--color-muted-fg)">(opcional)</span></label>
+          <textarea name="description" id="createDesc" class="app-input app-textarea"
+            placeholder="Uma breve descrição desta lista…" rows="2" maxlength="500"></textarea>
+        </div>
+
+        <!-- Critérios (só aparece para listas inteligentes) -->
+        <div id="smartCriteria" hidden>
+          <div class="modal-field">
+            <label class="app-label">Continentes</label>
+            <div class="chip-group">
+              {% for continent in continents %}
+                <label class="chip">
+                  <input type="checkbox" name="criteria_continents" value="{{ continent }}" />
+                  {{ continent }}
+                </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="modal-field">
+            <label class="app-label">Idiomas</label>
+            <div class="chip-group">
+              {% for lang in languages %}
+                <label class="chip">
+                  <input type="checkbox" name="criteria_languages" value="{{ lang }}" />
+                  {{ lang }}
+                </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="modal-field">
+            <label class="app-label">Meses ideais para visitar</label>
+            <div class="chip-group">
+              {% for m in months %}
+                <label class="chip">
+                  <input type="checkbox" name="criteria_months" value="{{ m.value }}" />
+                  {{ m.full }}
+                </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="modal-field">
+            <label class="app-label" for="createCountries">
+              Países
+              <span class="app-hint" style="margin-top:0;margin-left:.25rem;">(separados por vírgula)</span>
+            </label>
+            <input type="text" name="criteria_countries" id="createCountries"
+              class="app-input" placeholder="Ex: Japão, França, Itália" />
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" onclick="closeCreateModal()">Cancelar</button>
+          <button type="submit" class="btn-primary">Criar Lista</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // ── Modal ────────────────────────────────────────────────────────────
+  function openCreateModal() {
+    const m = document.getElementById('createModal');
+    m.hidden = false;
+    setTimeout(() => m.querySelector('.modal-box').classList.add('modal-box--visible'), 10);
+    document.getElementById('createName').focus();
+  }
+
+  function closeCreateModal() {
+    const box = document.querySelector('#createModal .modal-box');
+    box.classList.remove('modal-box--visible');
+    setTimeout(() => document.getElementById('createModal').hidden = true, 200);
+  }
+
+  document.getElementById('createModal').addEventListener('click', function(e) {
+    if (e.target === this) closeCreateModal();
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeCreateModal();
+  });
+
+  // ── Tipo de lista ────────────────────────────────────────────────────
+  const HINTS = {
+    manual: 'Você escolhe manualmente quais destinos entram na lista.',
+    smart: 'Destinos são incluídos automaticamente conforme os critérios escolhidos.',
+  };
+
+  function setListType(type) {
+    document.getElementById('listTypeInput').value = type;
+    document.querySelectorAll('.list-type-btn').forEach(btn => {
+      btn.classList.toggle('list-type-btn--active', btn.dataset.type === type);
+    });
+    document.getElementById('listTypeHint').textContent = HINTS[type];
+    document.getElementById('smartCriteria').hidden = (type !== 'smart');
+  }
+
+  // ── Emoji picker ─────────────────────────────────────────────────────
+  function toggleEmojiPicker() {
+    const p = document.getElementById('emojiPicker');
+    p.hidden = !p.hidden;
+  }
+
+  function selectEmoji(emoji) {
+    document.getElementById('emojiBtn').textContent = emoji;
+    document.getElementById('emojiInput').value = emoji;
+    document.getElementById('emojiPicker').hidden = true;
+  }
+
+  document.addEventListener('click', function(e) {
+    const wrap = document.querySelector('.emoji-picker-wrap');
+    if (wrap && !wrap.contains(e.target)) {
+      document.getElementById('emojiPicker').hidden = true;
+    }
+  });
+</script>
+{% endblock %}
