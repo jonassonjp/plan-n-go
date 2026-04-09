@@ -9,6 +9,7 @@ import json
 import requests
 from bs4 import BeautifulSoup
 from anthropic import Anthropic
+from .image_search import search_destination_image
 
 
 # =============================================================
@@ -217,8 +218,18 @@ def extract_with_claude(scraped: dict) -> dict:
     except json.JSONDecodeError as e:
         raise ExtractionError(f"Resposta inválida do Claude: {e}")
 
+    # Usar imagem do scraping se disponível
     if scraped.get("image_url"):
         data["image_url"] = scraped["image_url"]
+    else:
+        # Buscar imagem via Google Custom Search
+        name    = data.get("name", "")
+        country = data.get("country", "")
+        if name:
+            img_url = search_destination_image(name, country)
+            if img_url:
+                data["image_url"] = img_url
+
     data["source_url"] = scraped.get("url", "")
 
     return data

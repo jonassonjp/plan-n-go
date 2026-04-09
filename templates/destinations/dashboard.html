@@ -217,6 +217,48 @@
       </div>
 
       <script>
+
+      async function importFromText() {
+        var text = document.getElementById('import-text-input').value.trim();
+        var url  = document.getElementById('import-text-url').value.trim();
+        var btn  = document.getElementById('btn-import-text');
+        if (!text) { showImportStatus('error', 'Cole um texto para analisar.'); return; }
+        btn.disabled = true;
+        btn.textContent = 'Analisando...';
+        showImportStatus('loading', 'Analisando o texto com IA...');
+        try {
+          var csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+          var res  = await fetch('/destinations/import-url/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrf},
+            body: JSON.stringify({text: text, url: url})
+          });
+          var json = await res.json();
+          if (!res.ok || !json.success) {
+            showImportStatus('error', json.error || 'Não foi possível analisar.');
+            return;
+          }
+          var d = json.data;
+          fillModal(d);
+          if (d.image_url) { switchImgTab('url'); setVal('photo-url-input', d.image_url); previewUrl(d.image_url); }
+          var confLabel = d.confidence === 'high' ? 'alta' : d.confidence === 'medium' ? 'média' : 'baixa';
+          showImportStatus('success', '✓ Destino identificado (confiança ' + confLabel + '). Revise os campos.');
+          setTimeout(function(){ switchModalTab('manual'); }, 1200);
+        } catch(err) {
+          showImportStatus('error', 'Erro de conexão. Tente novamente.');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Analisar';
+        }
+      }
+
+      function showImportStatus(type, msg) {
+        var el = document.getElementById('import-status');
+        el.style.display = 'block';
+        el.className = 'import-status import-status--' + type;
+        el.textContent = msg;
+      }
+
       function switchModalTab(tab) {
         var manualPanel = document.getElementById('modal-body-manual');
         var importPanel = document.getElementById('import-panel');
@@ -233,6 +275,13 @@
           tabManual.classList.remove('modal-tab--active');
           tabImport.classList.add('modal-tab--active');
         }
+      }
+
+      function switchImportMode(mode) {
+        document.getElementById('import-mode-url').style.display  = mode === 'url'  ? 'block' : 'none';
+        document.getElementById('import-mode-text').style.display = mode === 'text' ? 'block' : 'none';
+        document.getElementById('subtab-url').classList.toggle('import-subtab--active',  mode === 'url');
+        document.getElementById('subtab-text').classList.toggle('import-subtab--active', mode === 'text');
       }
 
       async function importFromUrl() {
@@ -376,7 +425,7 @@
             <div class="dest-name-wrapper">
               <input class="app-input" type="text" id="dest-name" name="name"
                 placeholder="Ex: Machu Picchu, Chapada Diamantina, Paris..."
-                autocomplete="off" required />
+                autocomplete="off" />
               <div class="dest-autocomplete" id="dest-autocomplete"></div>
             </div>
             <span class="dest-continent-hint" id="dest-continent-hint"></span>
@@ -393,7 +442,7 @@
               País *
             </label>
             <input class="app-input" type="text" id="dest-country" name="country"
-              placeholder="Ex: Peru, França, Brasil..." required />
+              placeholder="Ex: Peru, França, Brasil..." />
           </div>
 
           <!-- Imagem -->

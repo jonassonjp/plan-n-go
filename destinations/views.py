@@ -293,18 +293,23 @@ def import_url_view(request):
 
     try:
         body = _json.loads(request.body)
-        url  = body.get("url", "").strip()
+        url  = body.get("url",  "").strip()
+        text = body.get("text", "").strip()
     except Exception:
         return JsonResponse({"error": "Requisição inválida."}, status=400)
 
-    if not url:
-        return JsonResponse({"error": "URL é obrigatória."}, status=400)
+    if not url and not text:
+        return JsonResponse({"error": "Informe uma URL ou cole um texto."}, status=400)
 
     if not getattr(settings, "ANTHROPIC_API_KEY", ""):
         return JsonResponse({"error": "ANTHROPIC_API_KEY não configurada no .env."}, status=500)
 
     try:
-        data = import_from_url(url)
+        from .importer import import_from_text as _import_text
+        if text:
+            data = _import_text(text, url)
+        else:
+            data = import_from_url(url)
         return JsonResponse({"success": True, "data": data})
     except ScrapingError as e:
         return JsonResponse({"error": str(e)}, status=422)
