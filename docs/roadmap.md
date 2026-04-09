@@ -46,6 +46,14 @@
 - [x] Página de detalhes: `/feed/destino/<slug>/`
 - [x] Informações: foto grande, meses, idiomas, moeda, visto, vacinas
 
+### Importação por URL
+- [x] Scraping de blogs e sites de viagem
+- [x] Extração de dados via Gemini 2.5 Flash (gratuito, padrão)
+- [x] Extração via Anthropic Claude (alternativa para produção)
+- [x] Opção de colar texto manualmente (ideal para Instagram)
+- [x] Busca automática de imagem via Unsplash API
+- [x] Alternativa documentada: Google Custom Search API
+
 ### Testes
 - [x] 28 testes no app `accounts` (cobertura ~92%)
 - [x] 12 testes no app `destinations` (geocoding)
@@ -54,11 +62,6 @@
 ---
 
 ## 🚧 Em desenvolvimento
-
-### Importação por URL
-- [ ] Scraping de URLs (Instagram, blogs, TripAdvisor)
-- [ ] Integração com Claude API para interpretar o conteúdo
-- [ ] Destino salvo como rascunho para revisão do usuário
 
 ### Listas
 - [ ] Listas manuais de destinos

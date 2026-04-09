@@ -43,6 +43,7 @@
 | Destinos em destaque            | [docs/featured.md](docs/featured.md)             |
 | Landing page                    | [docs/landing.md](docs/landing.md)               |
 | Interface e design system       | [docs/design.md](docs/design.md)                 |
+| Busca de imagens (Unsplash)     | [docs/image_search.md](docs/image_search.md)     |
 | Testes                          | [docs/tests.md](docs/tests.md)                   |
 | Roadmap                         | [docs/roadmap.md](docs/roadmap.md)               |
 
