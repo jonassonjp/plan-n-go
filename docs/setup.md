@@ -69,6 +69,30 @@ chmod +x setup_plango.sh
 
 ---
 
+
+## ⚠️ Chaves de API
+
+Todas as chaves de API do projeto estão armazenadas no **Bitwarden**.
+
+- Item: `Plan N'Go — API Keys` (Secure Note)
+- Acesse em: [bitwarden.com](https://bitwarden.com) ou pela extensão do browser
+
+| Variável | Serviço | Onde obter |
+|---|---|---|
+| `GEMINI_API_KEY` | Google Gemini | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) |
+| `ANTHROPIC_API_KEY` | Anthropic Claude | [console.anthropic.com](https://console.anthropic.com) |
+| `UNSPLASH_ACCESS_KEY` | Unsplash | [unsplash.com/developers](https://unsplash.com/developers) |
+| `GOOGLE_PLACES_API_KEY` | Google Places | [console.cloud.google.com](https://console.cloud.google.com) |
+
+> Para configurar um novo ambiente: copie o `.env.example` para `.env`
+> e preencha com as chaves do Bitwarden.
+
+```bash
+cp .env.example .env
+# edite o .env com as chaves do Bitwarden
+```
+
+
 ## Banco de dados
 
 ### Desenvolvimento (SQLite)
