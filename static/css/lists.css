@@ -496,6 +496,8 @@
 }
 .emoji-btn:hover { background: var(--color-secondary); }
 
+[hidden] { display: none !important; }
+
 .emoji-picker {
   position: absolute;
   top: calc(100% + 0.375rem);
