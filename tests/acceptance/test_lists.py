@@ -1,13 +1,14 @@
 """
 Testes de aceitação — Listas de Destinos
 """
+import re
 import pytest
 from playwright.sync_api import Page, expect
 
 
 def test_dashboard_listas_carrega(logged_page: Page, base_url: str):
     logged_page.goto(f"{base_url}/lists/")
-    expect(logged_page).to_have_title(lambda t: "Listas" in t)
+    expect(logged_page).to_have_title(re.compile("Listas"))
     expect(logged_page.locator("h1")).to_contain_text("Minhas Listas")
 
 
@@ -25,11 +26,11 @@ def test_criar_lista_inteligente(logged_page: Page, base_url: str):
     logged_page.click("button:has-text('Nova Lista')")
     logged_page.click("button[data-type='smart']")
     expect(logged_page.locator("#smartCriteria")).to_be_visible()
-    logged_page.check('input[name="criteria_continents"][value="Europa"]')
+    logged_page.locator('#smartCriteria label.chip:has-text("Europa")').click()
     logged_page.fill('input[name="name"]', "Europa E2E")
     logged_page.click('button[type="submit"]:has-text("Criar Lista")')
     expect(logged_page.locator("h1")).to_contain_text("Europa E2E")
-    expect(logged_page.locator(".list-card__badge--smart, .list-detail-title-row")).to_be_visible()
+    expect(logged_page.locator(".list-card__badge--smart, .list-detail-title-row").first).to_be_visible()
 
 
 def test_editar_lista(logged_page: Page, base_url: str):
@@ -53,4 +54,4 @@ def test_excluir_lista(logged_page: Page, base_url: str):
     logged_page.on("dialog", lambda dialog: dialog.accept())
     logged_page.click("button:has-text('Excluir')")
     expect(logged_page).to_have_url(f"{base_url}/lists/")
-    expect(logged_page.locator("body")).not_to_contain_text("Lista Para Excluir")
+    expect(logged_page.locator(".list-card__name", has_text="Lista Para Excluir")).to_have_count(0)

@@ -1,0 +1,470 @@
+{% extends "plango/base.html" %}
+{% load static %}
+
+{% block title %}{{ lst.emoji }} {{ lst.name }} — Plan N'Go{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/app.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/lists.css' %}" />
+{% endblock %}
+
+{% block body %}
+  {% include "components/app_navbar.html" %}
+
+  <main class="app-main">
+    <div class="container">
+
+      <!-- Breadcrumb -->
+      <nav class="list-breadcrumb" aria-label="Navegação">
+        <a href="{% url 'lists:dashboard' %}">Minhas Listas</a>
+        <span>/</span>
+        <span>{{ lst.name }}</span>
+      </nav>
+
+      <!-- Alertas -->
+      {% for message in messages %}
+        <div class="app-alert app-alert--{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+
+      <!-- Cabeçalho da lista -->
+      <div class="list-detail-header">
+        <div class="list-detail-header__left">
+          <span class="list-detail-emoji">{{ lst.emoji }}</span>
+          <div>
+            <div class="list-detail-title-row">
+              <h1 class="list-detail-title">{{ lst.name }}</h1>
+              {% if lst.is_smart %}
+                <span class="list-card__badge list-card__badge--smart">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02
+                                     12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                  </svg>
+                  Inteligente
+                </span>
+              {% else %}
+                <span class="list-card__badge list-card__badge--manual">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <line x1="8" y1="6" x2="21" y2="6"/>
+                    <line x1="8" y1="12" x2="21" y2="12"/>
+                    <line x1="8" y1="18" x2="21" y2="18"/>
+                  </svg>
+                  Manual
+                </span>
+              {% endif %}
+            </div>
+            {% if lst.description %}
+              <p class="list-detail-desc">{{ lst.description }}</p>
+            {% endif %}
+            {% if lst.is_smart and lst.smart_criteria %}
+              <div class="list-smart-criteria">
+                {% with c=lst.smart_criteria %}
+                  {% if c.continents %}<span>🌍 {{ c.continents|join:", " }}</span>{% endif %}
+                  {% if c.languages %}<span>🗣 {{ c.languages|join:", " }}</span>{% endif %}
+                  {% if c.countries %}<span>📌 {{ c.countries|join:", " }}</span>{% endif %}
+                  {% if c.months %}
+                    <span>📅
+                      {% for m in months %}
+                        {% if m.value|stringformat:"s" in c.months|join:"," %}{{ m.full }}{% if not forloop.last %}, {% endif %}{% endif %}
+                      {% endfor %}
+                    </span>
+                  {% endif %}
+                {% endwith %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="list-detail-header__actions">
+          <button class="btn-ghost btn-ghost--sm" onclick="openEditModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            Editar
+          </button>
+          <button class="btn-ghost btn-ghost--sm btn-ghost--danger"
+            onclick="confirmDelete()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+            </svg>
+            Excluir
+          </button>
+        </div>
+      </div>
+
+      <!-- Contador + botão adicionar (listas manuais) -->
+      <div class="list-section-header">
+        <span class="dash-count" style="font-size:.9375rem;padding:.25rem 1rem;">
+          {{ dest_count }} {{ dest_count|pluralize:"destino,destinos" }}
+        </span>
+        {% if not lst.is_smart and available %}
+          <button class="btn-primary btn-primary--sm" onclick="openAddModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Adicionar Destino
+          </button>
+        {% endif %}
+      </div>
+
+      <!-- Grid de destinos -->
+      {% if destinations %}
+        <div class="places-grid">
+          {% for dest in destinations %}
+            <article class="polaroid-card polaroid-card--list">
+
+              <div class="polaroid-card__tape"></div>
+
+              <div class="polaroid-card__photo">
+                {% if dest.photo %}
+                  <img src="{{ dest.photo }}" alt="{{ dest.name }}" loading="lazy" />
+                {% else %}
+                  <div class="polaroid-card__no-photo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                      <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                  </div>
+                {% endif %}
+                <div class="polaroid-card__photo-overlay"></div>
+
+                {% if dest.best_months_display %}
+                  <div class="polaroid-card__badge">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="4" width="18" height="18" rx="2"/>
+                      <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    {{ dest.best_months_display }}
+                  </div>
+                {% endif %}
+
+                {% if dest.visa_required %}
+                  <div class="polaroid-card__badge polaroid-card__badge--warning">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2">
+                      <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 19-7z"/>
+                    </svg>
+                    Visto
+                  </div>
+                {% endif %}
+
+                <!-- Botão remover (apenas listas manuais) -->
+                {% if not lst.is_smart %}
+                  <form method="post"
+                    action="{% url 'lists:remove_destination' lst.pk dest.pk %}"
+                    class="polaroid-card__remove-form">
+                    {% csrf_token %}
+                    <button type="submit" class="polaroid-card__icon-btn
+                      polaroid-card__icon-btn--remove"
+                      title="Remover da lista"
+                      onclick="return confirm('Remover {{ dest.name }} desta lista?')">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  </form>
+                {% endif %}
+              </div>
+
+              <div class="polaroid-card__label">
+                <h3 class="polaroid-card__name">{{ dest.name }}</h3>
+                <div class="polaroid-card__meta">
+                  <span>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                      <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    {{ dest.country }}
+                  </span>
+                  {% if dest.languages %}
+                    <span>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="2" y1="12" x2="22" y2="12"/>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10
+                                 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                      </svg>
+                      {{ dest.languages.0 }}
+                    </span>
+                  {% endif %}
+                </div>
+              </div>
+
+            </article>
+          {% endfor %}
+        </div>
+
+      {% else %}
+        <div class="dash-empty">
+          {% if lst.is_smart %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02
+                               12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            <h2>Nenhum destino encontrado</h2>
+            <p>Nenhum destino seu corresponde aos critérios desta lista ainda.</p>
+            <button class="btn-ghost" onclick="openEditModal()">Ajustar critérios</button>
+          {% else %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <h2>Lista vazia</h2>
+            <p>Adicione destinos do seu catálogo a esta lista.</p>
+            {% if available %}
+              <button class="btn-primary" onclick="openAddModal()">Adicionar Destino</button>
+            {% else %}
+              <a href="{% url 'destinations:dashboard' %}" class="btn-ghost">
+                Ver Meus Destinos
+              </a>
+            {% endif %}
+          {% endif %}
+        </div>
+      {% endif %}
+
+    </div>
+  </main>
+
+  <!-- ── Modal: Editar Lista ───────────────────────────────────────── -->
+  <div id="editModal" class="modal-overlay" role="dialog" aria-modal="true"
+       aria-labelledby="editModalTitle" hidden>
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title" id="editModalTitle">Editar Lista</h2>
+        <button class="modal-close" onclick="closeEditModal()" aria-label="Fechar">&times;</button>
+      </div>
+
+      <form method="post" action="{% url 'lists:edit' lst.pk %}">
+        {% csrf_token %}
+
+        <div class="modal-field">
+          <label class="app-label">Nome</label>
+          <div class="list-name-row">
+            <div class="emoji-picker-wrap">
+              <button type="button" class="emoji-btn" id="editEmojiBtn"
+                onclick="toggleEditEmojiPicker()" title="Emoji">{{ lst.emoji }}</button>
+              <input type="hidden" name="emoji" id="editEmojiInput" value="{{ lst.emoji }}" />
+              <div class="emoji-picker" id="editEmojiPicker" hidden>
+                {% for e in emojis %}
+                  <button type="button" class="emoji-option"
+                    onclick="selectEditEmoji('{{ e }}')">{{ e }}</button>
+                {% endfor %}
+              </div>
+            </div>
+            <input type="text" name="name" class="app-input"
+              value="{{ lst.name }}" required maxlength="200" />
+          </div>
+        </div>
+
+        <div class="modal-field">
+          <label class="app-label">Descrição</label>
+          <textarea name="description" class="app-input app-textarea"
+            rows="2" maxlength="500">{{ lst.description }}</textarea>
+        </div>
+
+        {% if lst.is_smart %}
+          <div class="modal-field">
+            <label class="app-label">Continentes</label>
+            <div class="chip-group">
+              {% for continent in continents %}
+                <label class="chip">
+                  <input type="checkbox" name="criteria_continents" value="{{ continent }}"
+                    {% if continent in lst.smart_criteria.continents %}checked{% endif %} />
+                  {{ continent }}
+                </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="modal-field">
+            <label class="app-label">Idiomas</label>
+            <div class="chip-group">
+              {% for lang in languages %}
+                <label class="chip">
+                  <input type="checkbox" name="criteria_languages" value="{{ lang }}"
+                    {% if lang in lst.smart_criteria.languages %}checked{% endif %} />
+                  {{ lang }}
+                </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="modal-field">
+            <label class="app-label">Meses ideais</label>
+            <div class="chip-group">
+              {% for m in months %}
+                <label class="chip">
+                  <input type="checkbox" name="criteria_months" value="{{ m.value }}"
+                    {% if m.value in lst.smart_criteria.months %}checked{% endif %} />
+                  {{ m.full }}
+                </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="modal-field">
+            <label class="app-label">Países (separados por vírgula)</label>
+            <input type="text" name="criteria_countries" class="app-input"
+              value="{{ lst.smart_criteria.countries|join:', ' }}" />
+          </div>
+        {% endif %}
+
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" onclick="closeEditModal()">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Modal: Adicionar Destino (listas manuais) ─────────────────── -->
+  {% if not lst.is_smart and available %}
+  <div id="addModal" class="modal-overlay" role="dialog" aria-modal="true"
+       aria-labelledby="addModalTitle" hidden>
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title" id="addModalTitle">Adicionar Destino</h2>
+        <button class="modal-close" onclick="closeAddModal()" aria-label="Fechar">&times;</button>
+      </div>
+
+      <input type="text" id="addSearch" class="app-input" style="margin-bottom:1rem;"
+        placeholder="Buscar destino…" oninput="filterDestinations(this.value)" />
+
+      <div class="add-dest-list" id="addDestList">
+        {% for dest in available %}
+          <form method="post" action="{% url 'lists:add_destination' lst.pk %}"
+            class="add-dest-item">
+            {% csrf_token %}
+            <input type="hidden" name="destination_id" value="{{ dest.pk }}" />
+            <div class="add-dest-item__photo">
+              {% if dest.photo %}
+                <img src="{{ dest.photo }}" alt="{{ dest.name }}" />
+              {% else %}
+                <div class="add-dest-item__no-photo">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                  </svg>
+                </div>
+              {% endif %}
+            </div>
+            <div class="add-dest-item__info">
+              <span class="add-dest-item__name">{{ dest.name }}</span>
+              <span class="add-dest-item__country">{{ dest.country }}</span>
+            </div>
+            <button type="submit" class="btn-primary btn-primary--sm">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Adicionar
+            </button>
+          </form>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Form oculto: excluir lista ───────────────────────────────── -->
+  <form id="deleteForm" method="post" action="{% url 'lists:delete' lst.pk %}" hidden>
+    {% csrf_token %}
+  </form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // ── Modal Editar ─────────────────────────────────────────────────────
+  function openEditModal() {
+    const m = document.getElementById('editModal');
+    m.hidden = false;
+    setTimeout(() => m.querySelector('.modal-box').classList.add('modal-box--visible'), 10);
+  }
+  function closeEditModal() {
+    const box = document.querySelector('#editModal .modal-box');
+    box.classList.remove('modal-box--visible');
+    setTimeout(() => document.getElementById('editModal').hidden = true, 200);
+  }
+  document.getElementById('editModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeEditModal();
+  });
+
+  // ── Modal Adicionar ──────────────────────────────────────────────────
+  function openAddModal() {
+    const m = document.getElementById('addModal');
+    if (!m) return;
+    m.hidden = false;
+    setTimeout(() => m.querySelector('.modal-box').classList.add('modal-box--visible'), 10);
+    document.getElementById('addSearch')?.focus();
+  }
+  function closeAddModal() {
+    const m = document.getElementById('addModal');
+    if (!m) return;
+    m.querySelector('.modal-box').classList.remove('modal-box--visible');
+    setTimeout(() => m.hidden = true, 200);
+  }
+  document.getElementById('addModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeAddModal();
+  });
+
+  // ── Filtrar destinos no modal ────────────────────────────────────────
+  function filterDestinations(q) {
+    const items = document.querySelectorAll('.add-dest-item');
+    q = q.toLowerCase();
+    items.forEach(item => {
+      const name = item.querySelector('.add-dest-item__name')?.textContent.toLowerCase() || '';
+      const country = item.querySelector('.add-dest-item__country')?.textContent.toLowerCase() || '';
+      item.style.display = (name.includes(q) || country.includes(q)) ? '' : 'none';
+    });
+  }
+
+  // ── Excluir lista ────────────────────────────────────────────────────
+  function confirmDelete() {
+    if (confirm('Excluir a lista "{{ lst.name }}"? Esta ação não pode ser desfeita.')) {
+      document.getElementById('deleteForm').submit();
+    }
+  }
+
+  // ── Emoji picker (editar) ────────────────────────────────────────────
+  function toggleEditEmojiPicker() {
+    const p = document.getElementById('editEmojiPicker');
+    p.hidden = !p.hidden;
+  }
+  function selectEditEmoji(emoji) {
+    document.getElementById('editEmojiBtn').textContent = emoji;
+    document.getElementById('editEmojiInput').value = emoji;
+    document.getElementById('editEmojiPicker').hidden = true;
+  }
+
+  // Fechar emoji picker ao clicar fora
+  document.addEventListener('click', function(e) {
+    document.querySelectorAll('.emoji-picker-wrap').forEach(wrap => {
+      if (!wrap.contains(e.target)) {
+        wrap.querySelector('.emoji-picker').hidden = true;
+      }
+    });
+  });
+
+  // Fechar modais com Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeEditModal();
+      closeAddModal();
+    }
+  });
+</script>
+{% endblock %}
