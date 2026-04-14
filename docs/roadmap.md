@@ -54,24 +54,32 @@
 - [x] Busca automática de imagem via Unsplash API
 - [x] Alternativa documentada: Google Custom Search API
 
+### Listas
+- [x] Listas manuais de destinos
+- [x] Listas inteligentes com critérios (por continente, país, idioma, mês)
+- [x] Um destino pode estar em várias listas
+- [x] Toggle via AJAX no dashboard de destinos
+
 ### Testes
 - [x] 28 testes no app `accounts` (cobertura ~92%)
 - [x] 12 testes no app `destinations` (geocoding)
+- [x] 17 testes no app `lists`
+- [x] 9 testes de aceitação E2E com Playwright (auth + lists)
 - [x] Integração com pytest-cov
 
 ---
 
 ## 🚧 Em desenvolvimento
 
-### Listas
-- [ ] Listas manuais de destinos
-- [ ] Listas inteligentes com critérios (por continente, país, idioma)
-- [ ] Um destino pode estar em várias listas
-
 ### Roteiros
-- [ ] Geração de roteiro por IA (Claude)
+- [ ] Model `Roteiro` vinculado a um destino do usuário
+- [ ] Model `Dia` — cada roteiro tem N dias
+- [ ] Model `Indicacao` — cada dia tem N indicações (pontos turísticos, atividades)
+- [ ] Custo médio de hospedagem por dia
+- [ ] Custo médio de alimentação por dia
+- [ ] Indicações de alimentação por dia (restaurantes, cafés, mercados)
+- [ ] Geração automática via IA (Claude)
 - [ ] Edição manual dia a dia
-- [ ] Compartilhamento por convite com edição colaborativa
 - [ ] Visibilidade: privado, restrito, público
 
 ### Feed público
