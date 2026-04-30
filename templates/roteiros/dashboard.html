@@ -1,0 +1,119 @@
+{% extends "plango/base.html" %}
+{% load static %}
+
+{% block title %}Meus Roteiros — Plan N'Go{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/app.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/roteiros.css' %}" />
+{% endblock %}
+
+{% block body %}
+  {% include "components/app_navbar.html" %}
+
+  <main class="app-main">
+    <div class="container">
+
+      <div class="dash-header">
+        <div class="dash-header__left">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          <h1>Meus Roteiros</h1>
+          <span class="dash-count">
+            {{ roteiros|length }} {{ roteiros|length|pluralize:"roteiro,roteiros" }}
+          </span>
+        </div>
+        <a href="{% url 'destinations:dashboard' %}" class="btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Novo Roteiro
+        </a>
+      </div>
+
+      {% for message in messages %}
+        <div class="app-alert app-alert--{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+
+      {% if roteiros %}
+        <div class="roteiros-grid">
+          {% for roteiro in roteiros %}
+            <a href="{% url 'roteiros:detail' roteiro.pk %}" class="roteiro-card">
+
+              <div class="roteiro-card__dest">
+                {% if roteiro.destination.photo %}
+                  <img src="{{ roteiro.destination.photo }}" alt="{{ roteiro.destination.name }}" />
+                {% else %}
+                  <div class="roteiro-card__dest-empty">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                      <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                  </div>
+                {% endif %}
+                <div class="roteiro-card__dest-overlay">
+                  <span class="roteiro-card__country">{{ roteiro.destination.country }}</span>
+                </div>
+              </div>
+
+              <div class="roteiro-card__body">
+                <h3 class="roteiro-card__title">{{ roteiro.title }}</h3>
+                <p class="roteiro-card__dest-name">{{ roteiro.destination.name }}</p>
+
+                <div class="roteiro-card__meta">
+                  <span class="roteiro-card__days">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="4" width="18" height="18" rx="2"/>
+                      <line x1="16" y1="2" x2="16" y2="6"/>
+                      <line x1="8" y1="2" x2="8" y2="6"/>
+                      <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    {{ roteiro.num_dias }} {{ roteiro.num_dias|pluralize:"dia,dias" }}
+                  </span>
+
+                  {% if roteiro.custo_total_local %}
+                    <span class="roteiro-card__cost">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="1" x2="12" y2="23"/>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                      </svg>
+                      {{ roteiro.moeda }} {{ roteiro.custo_total_local|floatformat:0 }}
+                    </span>
+                  {% endif %}
+
+                  <span class="roteiro-card__visibility roteiro-card__visibility--{{ roteiro.visibility }}">
+                    {{ roteiro.get_visibility_display }}
+                  </span>
+                </div>
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+
+      {% else %}
+        <div class="dash-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          <h2>Nenhum roteiro ainda</h2>
+          <p>Crie um roteiro a partir de um destino do seu catálogo.</p>
+          <a href="{% url 'destinations:dashboard' %}" class="btn-primary">
+            Ir para Meus Destinos
+          </a>
+        </div>
+      {% endif %}
+
+    </div>
+  </main>
+{% endblock %}

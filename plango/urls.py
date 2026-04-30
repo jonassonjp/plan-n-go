@@ -15,6 +15,6 @@ urlpatterns = [
     path("accounts/",    include("accounts.urls")),
     path("destinations/", include("destinations.urls")),
     path("lists/",       include("lists.urls")),
-    path("itineraries/", include("itineraries.urls")),
+    path("roteiros/",    include("roteiros.urls")),
     path("feed/",        include("feed.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

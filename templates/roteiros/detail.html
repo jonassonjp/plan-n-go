@@ -1,0 +1,468 @@
+{% extends "plango/base.html" %}
+{% load static %}
+
+{% block title %}{{ roteiro.title }} — Plan N'Go{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/app.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/roteiros.css' %}" />
+{% endblock %}
+
+{% block body %}
+  {% include "components/app_navbar.html" %}
+
+  <main class="app-main">
+    <div class="container">
+
+      <!-- Cabeçalho do roteiro -->
+      <div class="roteiro-header">
+        <div class="roteiro-header__left">
+          <a href="{% url 'roteiros:dashboard' %}" class="btn-back">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            Roteiros
+          </a>
+          <div>
+            <h1 class="roteiro-header__title">{{ roteiro.title }}</h1>
+            <p class="roteiro-header__dest">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              {{ roteiro.destination.name }}, {{ roteiro.destination.country }}
+            </p>
+          </div>
+        </div>
+        <div class="roteiro-header__actions">
+          <button class="btn-ghost" onclick="openEditModal()">Editar</button>
+          <form method="post" action="{% url 'roteiros:delete' roteiro.pk %}"
+                onsubmit="return confirm('Excluir este roteiro?');" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn-danger">Excluir</button>
+          </form>
+        </div>
+      </div>
+
+      {% for message in messages %}
+        <div class="app-alert app-alert--{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+
+      <!-- Painel de custos -->
+      {% if roteiro.custo_hospedagem or roteiro.custo_alimentacao %}
+        <div class="custo-panel">
+          <div class="custo-panel__title">Resumo de Custos</div>
+          <div class="custo-grid">
+
+            {% if roteiro.custo_hospedagem %}
+              <div class="custo-item">
+                <span class="custo-item__label">Hospedagem</span>
+                <span class="custo-item__value">
+                  {{ roteiro.moeda }} {{ roteiro.custo_hospedagem|floatformat:2 }}
+                </span>
+                {% if roteiro.custo_hospedagem_brl %}
+                  <span class="custo-item__brl">≈ R$ {{ roteiro.custo_hospedagem_brl|floatformat:2 }}</span>
+                {% endif %}
+              </div>
+            {% endif %}
+
+            {% if roteiro.custo_alimentacao %}
+              <div class="custo-item">
+                <span class="custo-item__label">Alimentação</span>
+                <span class="custo-item__value">
+                  {{ roteiro.moeda }} {{ roteiro.custo_alimentacao|floatformat:2 }}
+                </span>
+                {% if roteiro.custo_alimentacao_brl %}
+                  <span class="custo-item__brl">≈ R$ {{ roteiro.custo_alimentacao_brl|floatformat:2 }}</span>
+                {% endif %}
+              </div>
+            {% endif %}
+
+            {% if roteiro.custo_total_local %}
+              <div class="custo-item custo-item--total">
+                <span class="custo-item__label">Total</span>
+                <span class="custo-item__value">
+                  {{ roteiro.moeda }} {{ roteiro.custo_total_local|floatformat:2 }}
+                </span>
+                {% if roteiro.custo_total_brl %}
+                  <span class="custo-item__brl">≈ R$ {{ roteiro.custo_total_brl|floatformat:2 }}</span>
+                {% endif %}
+              </div>
+            {% endif %}
+
+          </div>
+          {% if roteiro.taxa_cambio %}
+            <p class="custo-panel__rate">
+              Câmbio: 1 {{ roteiro.moeda }} = R$ {{ roteiro.taxa_cambio|floatformat:4 }}
+            </p>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      <!-- Gerar com IA -->
+      <div class="ia-bar">
+        <div class="ia-bar__left">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          <span>Gerar roteiro com IA</span>
+          <span class="ia-bar__hint">O Claude cria uma base que você adapta</span>
+        </div>
+        <div class="ia-bar__right">
+          <input type="number" id="numDias" min="1" max="30" value="5"
+            class="app-input ia-bar__days" placeholder="Dias" />
+          <button class="btn-primary" onclick="gerarRoteiro()">Gerar</button>
+        </div>
+      </div>
+
+      <!-- Adicionar dia -->
+      <div class="dias-header">
+        <h2>Dias do Roteiro</h2>
+        <form method="post" action="{% url 'roteiros:dia_add' roteiro.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn-ghost btn-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Adicionar Dia
+          </button>
+        </form>
+      </div>
+
+      <!-- Lista de dias -->
+      {% if dias %}
+        <div class="dias-list">
+          {% for dia in dias %}
+            <div class="dia-card" id="dia-{{ dia.pk }}">
+
+              <!-- Cabeçalho do dia -->
+              <div class="dia-card__header">
+                <div class="dia-card__number">Dia {{ dia.numero }}</div>
+                <div class="dia-card__info">
+                  {% if dia.titulo %}
+                    <span class="dia-card__title">{{ dia.titulo }}</span>
+                  {% endif %}
+                  {% if dia.data %}
+                    <span class="dia-card__date">{{ dia.data|date:"d/m/Y" }}</span>
+                  {% endif %}
+                </div>
+                <div class="dia-card__actions">
+                  <button class="btn-icon" onclick="openDiaEditModal({{ dia.pk }}, '{{ dia.titulo|escapejs }}', '{{ dia.data|date:'Y-m-d' }}')"
+                    title="Editar dia">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                  </button>
+                  <form method="post"
+                    action="{% url 'roteiros:dia_delete' roteiro.pk dia.pk %}"
+                    onsubmit="return confirm('Remover Dia {{ dia.numero }} e todas as suas indicações?');"
+                    style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-icon btn-icon--danger" title="Remover dia">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14H6L5 6"/>
+                        <path d="M10 11v6M14 11v6"/>
+                        <path d="M9 6V4h6v2"/>
+                      </svg>
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              <!-- Indicações do dia -->
+              <div class="indicacoes-list">
+                {% for ind in dia.indicacoes.all %}
+                  <div class="indicacao-item indicacao-item--{{ ind.tipo }}">
+                    <div class="indicacao-item__tipo-badge">{{ ind.get_tipo_display }}</div>
+                    <div class="indicacao-item__body">
+                      <div class="indicacao-item__row">
+                        <span class="indicacao-item__nome">{{ ind.nome }}</span>
+                        {% if ind.horario_sugerido %}
+                          <span class="indicacao-item__hora">{{ ind.horario_sugerido|time:"H:i" }}</span>
+                        {% endif %}
+                        {% if ind.custo_estimado %}
+                          <span class="indicacao-item__custo">
+                            {{ roteiro.moeda }} {{ ind.custo_estimado|floatformat:0 }}
+                          </span>
+                        {% endif %}
+                      </div>
+                      {% if ind.descricao %}
+                        <p class="indicacao-item__desc">{{ ind.descricao }}</p>
+                      {% endif %}
+                    </div>
+                    <div class="indicacao-item__actions">
+                      <button class="btn-icon"
+                        onclick="openIndicacaoEditModal({{ ind.pk }}, '{{ ind.tipo }}', '{{ ind.nome|escapejs }}', '{{ ind.descricao|escapejs }}', '{{ ind.horario_sugerido|time:'H:i' }}', '{{ ind.custo_estimado|default:'' }}')"
+                        title="Editar">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                          stroke="currentColor" stroke-width="2">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                      </button>
+                      <form method="post"
+                        action="{% url 'roteiros:indicacao_delete' roteiro.pk ind.pk %}"
+                        style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-icon btn-icon--danger" title="Remover">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                          </svg>
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                {% empty %}
+                  <p class="indicacoes-empty">Nenhuma indicação ainda.</p>
+                {% endfor %}
+              </div>
+
+              <!-- Adicionar indicação -->
+              <button class="btn-add-indicacao"
+                onclick="openIndicacaoAddModal({{ dia.pk }}, {{ dia.numero }})">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19"/>
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Adicionar indicação
+              </button>
+
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="dias-empty">
+          <p>Nenhum dia adicionado. Clique em "Adicionar Dia" ou use a IA para gerar o roteiro.</p>
+        </div>
+      {% endif %}
+
+    </div>
+  </main>
+
+  <!-- ── Modal: Editar Roteiro ─────────────────────────────────────── -->
+  <div id="editModal" class="modal-overlay" hidden>
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title">Editar Roteiro</h2>
+        <button class="modal-close" onclick="closeModal('editModal')">&times;</button>
+      </div>
+      <form method="post" action="{% url 'roteiros:edit' roteiro.pk %}">
+        {% csrf_token %}
+        <div class="modal-field">
+          <label class="app-label">Título</label>
+          <input type="text" name="title" class="app-input"
+            value="{{ roteiro.title }}" required maxlength="200" />
+        </div>
+        <div class="modal-field">
+          <label class="app-label">Descrição</label>
+          <textarea name="description" class="app-input app-textarea"
+            rows="2">{{ roteiro.description }}</textarea>
+        </div>
+        <div class="modal-field">
+          <label class="app-label">Visibilidade</label>
+          <select name="visibility" class="app-input app-select">
+            {% for v in visibilidades %}
+              <option value="{{ v.value }}" {% if v.value == roteiro.visibility %}selected{% endif %}>
+                {{ v.label }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-section__title" style="margin-top:1rem;">Custos totais</div>
+        <div class="cost-grid">
+          <div class="modal-field">
+            <label class="app-label">Hospedagem ({{ roteiro.moeda }})</label>
+            <input type="number" name="custo_hospedagem" class="app-input"
+              value="{{ roteiro.custo_hospedagem|default:'' }}" min="0" step="0.01" />
+          </div>
+          <div class="modal-field">
+            <label class="app-label">Alimentação ({{ roteiro.moeda }})</label>
+            <input type="number" name="custo_alimentacao" class="app-input"
+              value="{{ roteiro.custo_alimentacao|default:'' }}" min="0" step="0.01" />
+          </div>
+          <div class="modal-field">
+            <label class="app-label">Câmbio (1 {{ roteiro.moeda }} = ? BRL)</label>
+            <input type="number" name="taxa_cambio" class="app-input"
+              value="{{ roteiro.taxa_cambio|default:'' }}" min="0" step="0.0001" />
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" onclick="closeModal('editModal')">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Modal: Editar Dia ─────────────────────────────────────────── -->
+  <div id="diaEditModal" class="modal-overlay" hidden>
+    <div class="modal-box modal-box--sm">
+      <div class="modal-header">
+        <h2 class="modal-title">Editar Dia</h2>
+        <button class="modal-close" onclick="closeModal('diaEditModal')">&times;</button>
+      </div>
+      <form method="post" id="diaEditForm">
+        {% csrf_token %}
+        <div class="modal-field">
+          <label class="app-label">Título do dia <span class="app-hint-inline">(opcional)</span></label>
+          <input type="text" name="titulo" id="diaTituloInput" class="app-input"
+            placeholder="Ex: Chegada e centro histórico" maxlength="200" />
+        </div>
+        <div class="modal-field">
+          <label class="app-label">Data <span class="app-hint-inline">(opcional)</span></label>
+          <input type="date" name="data" id="diaDataInput" class="app-input" />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" onclick="closeModal('diaEditModal')">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Modal: Adicionar Indicação ───────────────────────────────── -->
+  <div id="indicacaoAddModal" class="modal-overlay" hidden>
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title" id="indicacaoAddTitle">Adicionar Indicação</h2>
+        <button class="modal-close" onclick="closeModal('indicacaoAddModal')">&times;</button>
+      </div>
+      <form method="post" id="indicacaoAddForm">
+        {% csrf_token %}
+        {% include "roteiros/_indicacao_fields.html" %}
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" onclick="closeModal('indicacaoAddModal')">Cancelar</button>
+          <button type="submit" class="btn-primary">Adicionar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Modal: Editar Indicação ──────────────────────────────────── -->
+  <div id="indicacaoEditModal" class="modal-overlay" hidden>
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title">Editar Indicação</h2>
+        <button class="modal-close" onclick="closeModal('indicacaoEditModal')">&times;</button>
+      </div>
+      <form method="post" id="indicacaoEditForm">
+        {% csrf_token %}
+        {% include "roteiros/_indicacao_fields.html" %}
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" onclick="closeModal('indicacaoEditModal')">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const ROTEIRO_PK = {{ roteiro.pk }};
+
+  // ── Modais ──────────────────────────────────────────────────────────
+  function openModal(id) {
+    const m = document.getElementById(id);
+    m.hidden = false;
+    setTimeout(() => m.querySelector('.modal-box').classList.add('modal-box--visible'), 10);
+  }
+
+  function closeModal(id) {
+    const m = document.getElementById(id);
+    const box = m.querySelector('.modal-box');
+    box.classList.remove('modal-box--visible');
+    setTimeout(() => m.hidden = true, 200);
+  }
+
+  document.querySelectorAll('.modal-overlay').forEach(m => {
+    m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); });
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape')
+      document.querySelectorAll('.modal-overlay:not([hidden])').forEach(m => closeModal(m.id));
+  });
+
+  // ── Editar roteiro ──────────────────────────────────────────────────
+  function openEditModal() { openModal('editModal'); }
+
+  // ── Editar dia ──────────────────────────────────────────────────────
+  function openDiaEditModal(diaPk, titulo, data) {
+    document.getElementById('diaEditForm').action =
+      `/roteiros/${ROTEIRO_PK}/dias/${diaPk}/editar/`;
+    document.getElementById('diaTituloInput').value = titulo;
+    document.getElementById('diaDataInput').value = data;
+    openModal('diaEditModal');
+  }
+
+  // ── Adicionar indicação ─────────────────────────────────────────────
+  function openIndicacaoAddModal(diaPk, diaNumero) {
+    document.getElementById('indicacaoAddTitle').textContent =
+      `Adicionar ao Dia ${diaNumero}`;
+    document.getElementById('indicacaoAddForm').action =
+      `/roteiros/${ROTEIRO_PK}/dias/${diaPk}/indicacoes/adicionar/`;
+    // Limpa campos
+    document.querySelectorAll('#indicacaoAddForm input, #indicacaoAddForm textarea, #indicacaoAddForm select')
+      .forEach(el => {
+        if (el.name === 'tipo') el.value = 'turismo';
+        else el.value = '';
+      });
+    openModal('indicacaoAddModal');
+  }
+
+  // ── Editar indicação ────────────────────────────────────────────────
+  function openIndicacaoEditModal(indPk, tipo, nome, descricao, horario, custo) {
+    const form = document.getElementById('indicacaoEditForm');
+    form.action = `/roteiros/${ROTEIRO_PK}/indicacoes/${indPk}/editar/`;
+    form.querySelector('[name="tipo"]').value = tipo;
+    form.querySelector('[name="nome"]').value = nome;
+    form.querySelector('[name="descricao"]').value = descricao;
+    form.querySelector('[name="horario_sugerido"]').value = horario;
+    form.querySelector('[name="custo_estimado"]').value = custo;
+    openModal('indicacaoEditModal');
+  }
+
+  // ── Gerar com IA ────────────────────────────────────────────────────
+  async function gerarRoteiro() {
+    const numDias = document.getElementById('numDias').value;
+    const btn = document.querySelector('.ia-bar .btn-primary');
+    btn.textContent = 'Gerando…';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch(`/roteiros/${ROTEIRO_PK}/gerar-ia/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `num_dias=${numDias}`,
+      });
+      const data = await res.json();
+      if (data.success) {
+        window.location.href = data.redirect;
+      } else {
+        alert('Erro: ' + (data.error || 'Tente novamente.'));
+      }
+    } catch (e) {
+      alert('Erro inesperado. Tente novamente.');
+    } finally {
+      btn.textContent = 'Gerar';
+      btn.disabled = false;
+    }
+  }
+</script>
+{% endblock %}

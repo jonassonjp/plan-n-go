@@ -11,11 +11,14 @@
 
     <div class="app-navbar__actions">
       {% if user.is_authenticated %}
-        <a href="{% url 'lists:dashboard' %}" class="app-navbar__link">
-          Minhas Listas
-        </a>
         <a href="{% url 'destinations:dashboard' %}" class="app-navbar__link">
           Meus Destinos
+        </a>
+        <a href="{% url 'lists:dashboard' %}" class="app-navbar__link">
+          Listas
+        </a>
+        <a href="{% url 'roteiros:dashboard' %}" class="app-navbar__link">
+          Roteiros
         </a>
 
         <div class="app-navbar__divider"></div>

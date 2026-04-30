@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     "accounts",
     "destinations",
     "lists",
-    "itineraries",
+    "roteiros",
     "feed",
 ]
 

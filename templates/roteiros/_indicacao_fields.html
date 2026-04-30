@@ -1,0 +1,32 @@
+<div class="modal-field">
+  <label class="app-label">Tipo</label>
+  <select name="tipo" class="app-input app-select">
+    {% for t in tipos %}
+      <option value="{{ t.value }}">{{ t.label }}</option>
+    {% endfor %}
+  </select>
+</div>
+
+<div class="modal-field">
+  <label class="app-label">Nome</label>
+  <input type="text" name="nome" class="app-input"
+    placeholder="Ex: Templo Senso-ji" required maxlength="200" />
+</div>
+
+<div class="modal-field">
+  <label class="app-label">Descrição <span class="app-hint-inline">(opcional)</span></label>
+  <textarea name="descricao" class="app-input app-textarea"
+    placeholder="Breve descrição do local ou atividade…" rows="2"></textarea>
+</div>
+
+<div class="modal-field-row">
+  <div class="modal-field">
+    <label class="app-label">Horário sugerido <span class="app-hint-inline">(opcional)</span></label>
+    <input type="time" name="horario_sugerido" class="app-input" />
+  </div>
+  <div class="modal-field">
+    <label class="app-label">Custo estimado <span class="app-hint-inline">(moeda local, opcional)</span></label>
+    <input type="number" name="custo_estimado" class="app-input"
+      placeholder="Ex: 15.00" min="0" step="0.01" />
+  </div>
+</div>

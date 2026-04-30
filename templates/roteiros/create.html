@@ -1,0 +1,101 @@
+{% extends "plango/base.html" %}
+{% load static %}
+
+{% block title %}Novo Roteiro — {{ destination.name }} — Plan N'Go{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/app.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/roteiros.css' %}" />
+{% endblock %}
+
+{% block body %}
+  {% include "components/app_navbar.html" %}
+
+  <main class="app-main">
+    <div class="container container--narrow">
+
+      <div class="page-header">
+        <a href="{% url 'destinations:dashboard' %}" class="btn-back">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Meus Destinos
+        </a>
+        <h1>Novo Roteiro</h1>
+        <p class="page-header__sub">{{ destination.name }}, {{ destination.country }}</p>
+      </div>
+
+      {% for message in messages %}
+        <div class="app-alert app-alert--{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+
+      <form method="post" action="{% url 'roteiros:create' dest_pk=destination.pk %}"
+            class="roteiro-form">
+        {% csrf_token %}
+
+        <div class="form-section">
+          <div class="app-field">
+            <label class="app-label" for="title">Título</label>
+            <input type="text" name="title" id="title" class="app-input"
+              placeholder="Ex: 10 dias no Japão — Primavera" required maxlength="200" />
+          </div>
+
+          <div class="app-field">
+            <label class="app-label" for="description">
+              Descrição <span class="app-hint-inline">(opcional)</span>
+            </label>
+            <textarea name="description" id="description" class="app-input app-textarea"
+              placeholder="Uma breve descrição deste roteiro…" rows="3"></textarea>
+          </div>
+
+          <div class="app-field">
+            <label class="app-label" for="visibility">Visibilidade</label>
+            <select name="visibility" id="visibility" class="app-input app-select">
+              {% for v in visibilidades %}
+                <option value="{{ v.value }}">{{ v.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h2 class="form-section__title">Custos totais <span class="app-hint-inline">(opcional)</span></h2>
+          <p class="form-section__desc">Informe os valores totais da viagem para calcular o custo em BRL.</p>
+
+          <div class="cost-grid">
+            <div class="app-field">
+              <label class="app-label" for="custo_hospedagem">
+                Hospedagem total <span class="app-hint-inline">({{ destination.currency|default:"moeda local" }})</span>
+              </label>
+              <input type="number" name="custo_hospedagem" id="custo_hospedagem"
+                class="app-input" placeholder="Ex: 1200.00" min="0" step="0.01" />
+            </div>
+
+            <div class="app-field">
+              <label class="app-label" for="custo_alimentacao">
+                Alimentação total <span class="app-hint-inline">({{ destination.currency|default:"moeda local" }})</span>
+              </label>
+              <input type="number" name="custo_alimentacao" id="custo_alimentacao"
+                class="app-input" placeholder="Ex: 600.00" min="0" step="0.01" />
+            </div>
+
+            <div class="app-field">
+              <label class="app-label" for="taxa_cambio">
+                Câmbio do dia <span class="app-hint-inline">(1 {{ destination.currency|default:"moeda" }} = ? BRL)</span>
+              </label>
+              <input type="number" name="taxa_cambio" id="taxa_cambio"
+                class="app-input" placeholder="Ex: 5.20" min="0" step="0.0001" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <a href="{% url 'destinations:dashboard' %}" class="btn-ghost">Cancelar</a>
+          <button type="submit" class="btn-primary">Criar Roteiro</button>
+        </div>
+      </form>
+
+    </div>
+  </main>
+{% endblock %}
