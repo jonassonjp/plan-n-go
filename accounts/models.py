@@ -75,6 +75,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     email_verified  = models.BooleanField(default=False)
     email_token     = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
 
+    # --- Troca de e-mail pendente ---
+    pending_email        = models.EmailField(blank=True, default="", verbose_name="E-mail pendente")
+    email_change_token   = models.UUIDField(null=True, blank=True, default=None)
+
     # --- Controle ---
     is_staff    = models.BooleanField(default=False)
     created_at  = models.DateTimeField(auto_now_add=True)

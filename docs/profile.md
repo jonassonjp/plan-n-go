@@ -20,6 +20,8 @@ GET/POST /accounts/profile/setup/
 | Campo          | Obrigatório | Descrição                                                     |
 |----------------|-------------|---------------------------------------------------------------|
 | Foto de perfil | Não         | Upload de imagem. Aparece na navbar e em roteiros públicos    |
+| Nome completo  | Não         | Nome real do usuário (`user.name`)                            |
+| E-mail         | Não         | Alteração segura com confirmação por token (ver abaixo)       |
 | Nome público   | Não         | Como o usuário quer ser chamado. Se vazio, usa nome completo  |
 | Nacionalidade  | Não         | Usado para sugerir informações de visto automaticamente       |
 
@@ -42,7 +44,19 @@ A tela exibe 4 etapas:
 - **Salvar**: preenche os campos e clica "Salvar e começar"  
   → salva e redireciona para o dashboard
 - **Nome público vazio**: property `public_name` retorna o nome completo automaticamente
-- **Redefinir senha**: link "Receber link por e-mail" abaixo dos botões redireciona para `/accounts/password-reset/`
+- **Redefinir senha**: card estilizado abaixo dos botões redireciona para `/accounts/password-reset/`
+- **Troca de e-mail**: ao informar um novo e-mail, o sistema envia uma confirmação para o novo endereço. O e-mail atual permanece ativo até a confirmação via token UUID (`/accounts/email-change/confirm/<token>/`). Enquanto pendente, o campo exibe aviso amarelo com o e-mail aguardando confirmação.
+
+---
+
+## Fluxo de troca de e-mail
+
+1. Usuário edita o campo **E-mail** no formulário de perfil
+2. Sistema valida que o novo e-mail não está em uso
+3. Salva `user.pending_email` e `user.email_change_token`
+4. Envia e-mail de confirmação para o novo endereço via `_send_email_change_confirmation()`
+5. Usuário clica no link → `confirm_email_change_view` valida token e efetiva a troca
+6. `user.email` é atualizado; `pending_email` e `email_change_token` são limpos
 
 ---
 

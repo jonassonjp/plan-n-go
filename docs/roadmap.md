@@ -19,6 +19,7 @@
 - [x] Campos de perfil: foto, nome público, nacionalidade
 - [x] Redefinição de senha via e-mail (4 views, 5 templates)
 - [x] Comandos de gerenciamento: `set_passwords_to_123`, `set_superuser`
+- [x] Troca de e-mail com confirmação por token (fluxo seguro, e-mail atual ativo até confirmação)
 
 ### Destinos
 - [x] Model `Destination` completo
@@ -90,20 +91,20 @@
 ## 🚧 Em desenvolvimento
 
 ### Avaliação pós-visita
-- [ ] 1 a 5 estrelas
-- [ ] "Voltaria novamente?"
-- [ ] Texto livre e fotos
+- [ ] 1 a 5 estrelas [#0]() [#0]() [#0]() [#12](https://github.com/jonassonjp/plan-n-go/issues/12)
+- [ ] "Voltaria novamente?" [#0]() [#0]() [#0]() [#13](https://github.com/jonassonjp/plan-n-go/issues/13)
+- [ ] Texto livre e fotos [#0]() [#0]() [#0]() [#14](https://github.com/jonassonjp/plan-n-go/issues/14)
 
 ### Confirmação de e-mail (produção)
-- [ ] Integração com provedor real (SendGrid, Mailgun, etc.)
-- [ ] Reenvio de e-mail de confirmação
+- [ ] Integração com provedor real (SendGrid, Mailgun, etc.) [#0]() [#0]() [#0]() [#15](https://github.com/jonassonjp/plan-n-go/issues/15)
+- [ ] Reenvio de e-mail de confirmação [#0]() [#0]() [#0]() [#16](https://github.com/jonassonjp/plan-n-go/issues/16)
 
 ---
 
 ## 💡 Futuro
 
-- [ ] Página de detalhes do destino do usuário (atualmente só existe para destinos em destaque do superusuário — criar versão para destinos do catálogo pessoal)
-- [ ] App mobile (iOS e Android)
-- [ ] Integração com Google Maps (mapa dos destinos)
-- [ ] Notificações de melhores épocas para visitar
-- [ ] Importação em lote de destinos
+- [ ] Página de detalhes do destino do usuário (atualmente só existe para destinos em destaque do superusuário — criar versão para destinos do catálogo pessoal) [#0]() [#0]() [#0]() [#17](https://github.com/jonassonjp/plan-n-go/issues/17)
+- [ ] App mobile (iOS e Android) [#0]() [#0]() [#0]() [#18](https://github.com/jonassonjp/plan-n-go/issues/18)
+- [ ] Integração com Google Maps (mapa dos destinos) [#0]() [#0]() [#0]() [#19](https://github.com/jonassonjp/plan-n-go/issues/19)
+- [ ] Notificações de melhores épocas para visitar [#0]() [#0]() [#0]() [#20](https://github.com/jonassonjp/plan-n-go/issues/20)
+- [ ] Importação em lote de destinos [#0]() [#0]() [#0]() [#21](https://github.com/jonassonjp/plan-n-go/issues/21)

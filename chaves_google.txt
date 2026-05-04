@@ -1,9 +1,0 @@
-
-https://programmablesearchengine.google.com/controlpanel/create/congrats?cx=919b6703f827449a5
-<script async src="https://cse.google.com/cse.js?cx=919b6703f827449a5">
-</script>
-<div class="gcse-search"></div>
-
-
-Google API key created 
-AIzaSyBx3gpvuiWiPtftQJhC6Q3hXqUfQF93Yp4
