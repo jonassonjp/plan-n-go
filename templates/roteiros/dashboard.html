@@ -29,7 +29,7 @@
             {{ roteiros|length }} {{ roteiros|length|pluralize:"roteiro,roteiros" }}
           </span>
         </div>
-        <a href="{% url 'destinations:dashboard' %}" class="btn-primary">
+        <a href="{% url 'roteiros:select_destination' %}" class="btn-primary">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2.5">
             <line x1="12" y1="5" x2="12" y2="19"/>
@@ -108,8 +108,8 @@
           </svg>
           <h2>Nenhum roteiro ainda</h2>
           <p>Crie um roteiro a partir de um destino do seu catálogo.</p>
-          <a href="{% url 'destinations:dashboard' %}" class="btn-primary">
-            Ir para Meus Destinos
+          <a href="{% url 'roteiros:select_destination' %}" class="btn-primary">
+            Criar Primeiro Roteiro
           </a>
         </div>
       {% endif %}

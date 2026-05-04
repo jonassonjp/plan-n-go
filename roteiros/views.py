@@ -39,6 +39,14 @@ def dashboard(request):
     return render(request, "roteiros/dashboard.html", {"roteiros": roteiros})
 
 
+# ── Selecionar destino para novo roteiro ──────────────────────────────────────
+
+@login_required
+def select_destination(request):
+    destinations = Destination.objects.filter(user=request.user).order_by("name")
+    return render(request, "roteiros/select_destination.html", {"destinations": destinations})
+
+
 # ── Criar roteiro ─────────────────────────────────────────────────────────────
 
 @login_required

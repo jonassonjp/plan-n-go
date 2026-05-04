@@ -806,25 +806,27 @@ function setVal(id, val) {
 function activateTag(btn) {
   btn.classList.add("tag-btn--active");
   const cb = btn.nextElementSibling;
-  if (cb && cb.type === "checkbox") cb.disabled = false;
+  if (cb && cb.type === "checkbox") { cb.disabled = false; cb.checked = true; }
 }
 
 function activateMonth(btn) {
   btn.classList.add("month-btn--active");
   const cb = btn.querySelector("input[type='checkbox']");
-  if (cb) cb.disabled = false;
+  if (cb) { cb.disabled = false; cb.checked = true; }
 }
 
 function toggleTag(btn, name) {
   btn.classList.toggle("tag-btn--active");
+  const isActive = btn.classList.contains("tag-btn--active");
   const cb = btn.nextElementSibling;
-  if (cb && cb.type === "checkbox") cb.disabled = !btn.classList.contains("tag-btn--active");
+  if (cb && cb.type === "checkbox") { cb.disabled = !isActive; cb.checked = isActive; }
 }
 
 function toggleMonth(btn) {
   btn.classList.toggle("month-btn--active");
+  const isActive = btn.classList.contains("month-btn--active");
   const cb = btn.querySelector("input[type='checkbox']");
-  if (cb) cb.disabled = !btn.classList.contains("month-btn--active");
+  if (cb) { cb.disabled = !isActive; cb.checked = isActive; }
 }
 
 function toggleVaccineFields(val) {

@@ -472,16 +472,15 @@
       const data = await res.json();
       if (data.success) {
         window.location.href = data.redirect;
-      } else {
-        alert('Erro: ' + (data.error || 'Tente novamente.'));
+        return;
       }
+      alert('Erro: ' + (data.error || 'Tente novamente.'));
     } catch (e) {
       alert('Erro inesperado. Tente novamente.');
-    } finally {
-      btn.textContent = 'Gerar';
-      btn.disabled = false;
-      loading.style.display = 'none';
     }
+    btn.textContent = 'Gerar';
+    btn.disabled = false;
+    loading.style.display = 'none';
   }
 </script>
 {% endblock %}

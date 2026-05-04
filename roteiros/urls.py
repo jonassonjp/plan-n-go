@@ -7,8 +7,9 @@ from . import views
 app_name = "roteiros"
 
 urlpatterns = [
-    path("",                        views.dashboard,       name="dashboard"),
-    path("novo/<int:dest_pk>/",     views.create,          name="create"),
+    path("",                        views.dashboard,          name="dashboard"),
+    path("novo/",                   views.select_destination, name="select_destination"),
+    path("novo/<int:dest_pk>/",     views.create,             name="create"),
     path("<int:pk>/",               views.detail,          name="detail"),
     path("<int:pk>/editar/",        views.edit,            name="edit"),
     path("<int:pk>/excluir/",       views.delete,          name="delete"),

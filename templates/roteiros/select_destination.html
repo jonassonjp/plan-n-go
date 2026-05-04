@@ -1,0 +1,69 @@
+{% extends "plango/base.html" %}
+{% load static %}
+
+{% block title %}Novo Roteiro — Escolha um Destino — Plan N'Go{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/app.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/roteiros.css' %}" />
+{% endblock %}
+
+{% block body %}
+  {% include "components/app_navbar.html" %}
+
+  <main class="app-main">
+    <div class="container container--narrow">
+
+      <div class="page-header">
+        <a href="{% url 'roteiros:dashboard' %}" class="btn-back">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Meus Roteiros
+        </a>
+        <h1>Novo Roteiro</h1>
+        <p class="page-header__sub">Escolha o destino para o qual deseja criar um roteiro.</p>
+      </div>
+
+      {% if destinations %}
+        <div class="dest-select-grid">
+          {% for dest in destinations %}
+            <a href="{% url 'roteiros:create' dest_pk=dest.pk %}" class="dest-select-card">
+              <div class="dest-select-card__img">
+                {% if dest.photo %}
+                  <img src="{{ dest.photo }}" alt="{{ dest.name }}" />
+                {% else %}
+                  <div class="dest-select-card__img-empty">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                      <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                  </div>
+                {% endif %}
+              </div>
+              <div class="dest-select-card__body">
+                <strong>{{ dest.name }}</strong>
+                <span>{{ dest.country }}</span>
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="dash-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          <h2>Nenhum destino cadastrado</h2>
+          <p>Adicione um destino ao seu catálogo antes de criar um roteiro.</p>
+          <a href="{% url 'destinations:dashboard' %}" class="btn-primary">
+            Ir para Meus Destinos
+          </a>
+        </div>
+      {% endif %}
+
+    </div>
+  </main>
+{% endblock %}

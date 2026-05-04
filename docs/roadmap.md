@@ -91,20 +91,24 @@
 ## 🚧 Em desenvolvimento
 
 ### Avaliação pós-visita
-- [ ] 1 a 5 estrelas [#12](https://github.com/jonassonjp/plan-n-go/issues/12)
-- [ ] "Voltaria novamente?" [#13](https://github.com/jonassonjp/plan-n-go/issues/13)
-- [ ] Texto livre e fotos [#14](https://github.com/jonassonjp/plan-n-go/issues/14)
+- [ ] 1 a 5 estrelas [#22](https://github.com/jonassonjp/plan-n-go/issues/22)
+- [ ] "Voltaria novamente?" [#23](https://github.com/jonassonjp/plan-n-go/issues/23)
+- [ ] Texto livre e fotos [#24](https://github.com/jonassonjp/plan-n-go/issues/24)
 
 ### Confirmação de e-mail (produção)
-- [ ] Integração com provedor real (SendGrid, Mailgun, etc.) [#15](https://github.com/jonassonjp/plan-n-go/issues/15)
-- [ ] Reenvio de e-mail de confirmação [#16](https://github.com/jonassonjp/plan-n-go/issues/16)
+- [ ] Integração com provedor real (SendGrid, Mailgun, etc.) [#25](https://github.com/jonassonjp/plan-n-go/issues/25)
+- [ ] Reenvio de e-mail de confirmação [#26](https://github.com/jonassonjp/plan-n-go/issues/26)
+
+### Preferências de viagem do usuário
+- [ ] Campos de preferências no perfil (museus, cafés, vida noturna, estilo de viagem…) [#33](https://github.com/jonassonjp/plan-n-go/issues/33)
+- [ ] Usar preferências no prompt de geração de roteiro por IA [#33](https://github.com/jonassonjp/plan-n-go/issues/33)
 
 ---
 
 ## 💡 Futuro
 
-- [ ] Página de detalhes do destino do usuário (atualmente só existe para destinos em destaque do superusuário — criar versão para destinos do catálogo pessoal) [#17](https://github.com/jonassonjp/plan-n-go/issues/17)
-- [ ] App mobile (iOS e Android) [#18](https://github.com/jonassonjp/plan-n-go/issues/18)
-- [ ] Integração com Google Maps (mapa dos destinos) [#19](https://github.com/jonassonjp/plan-n-go/issues/19)
-- [ ] Notificações de melhores épocas para visitar [#20](https://github.com/jonassonjp/plan-n-go/issues/20)
-- [ ] Importação em lote de destinos [#21](https://github.com/jonassonjp/plan-n-go/issues/21)
+- [ ] Página de detalhes do destino do usuário (atualmente só existe para destinos em destaque do superusuário — criar versão para destinos do catálogo pessoal) [#27](https://github.com/jonassonjp/plan-n-go/issues/27)
+- [ ] App mobile (iOS e Android) [#28](https://github.com/jonassonjp/plan-n-go/issues/28)
+- [ ] Integração com Google Maps (mapa dos destinos) [#29](https://github.com/jonassonjp/plan-n-go/issues/29)
+- [ ] Notificações de melhores épocas para visitar [#30](https://github.com/jonassonjp/plan-n-go/issues/30)
+- [ ] Importação em lote de destinos [#31](https://github.com/jonassonjp/plan-n-go/issues/31)
