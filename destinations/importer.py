@@ -22,11 +22,42 @@ HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/120.0.0.0 Safari/537.36"
+        "Chrome/124.0.0.0 Safari/537.36"
     ),
-    "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+    "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1",
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "none",
+    "Sec-Fetch-User": "?1",
+    "sec-ch-ua": '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": '"Windows"',
+    "DNT": "1",
 }
+
+
+def _scrape_request(url: str) -> requests.Response:
+    """Faz a requisição usando sessão com cookies para parecer mais com um browser real."""
+    session = requests.Session()
+    session.headers.update(HEADERS)
+
+    # Primeira requisição à homepage do domínio para obter cookies de sessão
+    from urllib.parse import urlparse
+    parsed = urlparse(url)
+    origin = f"{parsed.scheme}://{parsed.netloc}"
+    try:
+        session.get(origin, timeout=8, allow_redirects=True)
+    except Exception:
+        pass  # ignora falha na requisição de aquecimento
+
+    # Requisição principal com Referer setado
+    session.headers["Referer"] = origin + "/"
+    response = session.get(url, timeout=12, allow_redirects=True)
+    return response
 
 
 def scrape_url(url: str) -> dict:
@@ -35,14 +66,40 @@ def scrape_url(url: str) -> dict:
     if "instagram.com" in url:
         raise ScrapingError(
             "O Instagram não permite extração automática de conteúdo. "
-            "Use a opção de texto livre para colar a legenda manualmente."
+            "Use a opção 'Colar texto' para colar a legenda manualmente."
         )
 
     try:
-        response = requests.get(url, headers=HEADERS, timeout=10)
+        response = _scrape_request(url)
         response.raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        status = e.response.status_code if e.response is not None else None
+        if status == 403:
+            raise ScrapingError(
+                "O site bloqueou o acesso automático (erro 403). "
+                "Isso é comum em grandes portais de turismo. "
+                "Tente a opção 'Colar texto': copie o conteúdo da página e cole diretamente."
+            )
+        if status == 404:
+            raise ScrapingError(
+                "Página não encontrada (erro 404). Verifique se a URL está correta."
+            )
+        if status in (429, 503):
+            raise ScrapingError(
+                "O site está temporariamente indisponível ou limitou os acessos. "
+                "Aguarde alguns minutos e tente novamente, ou use a opção 'Colar texto'."
+            )
+        raise ScrapingError(f"Erro ao acessar a URL (HTTP {status}). Tente a opção 'Colar texto'.")
+    except requests.exceptions.ConnectionError:
+        raise ScrapingError(
+            "Não foi possível conectar ao site. Verifique se a URL está correta e tente novamente."
+        )
+    except requests.exceptions.Timeout:
+        raise ScrapingError(
+            "O site demorou demais para responder. Tente novamente ou use a opção 'Colar texto'."
+        )
     except requests.RequestException as e:
-        raise ScrapingError(f"Não foi possível acessar a URL: {e}")
+        raise ScrapingError(f"Erro ao acessar a URL: {e}")
 
     soup = BeautifulSoup(response.text, "html.parser")
 

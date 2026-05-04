@@ -194,27 +194,6 @@
             </div>
           </div>
 
-          <!-- Card: Primeiro destino -->
-          <div class="profile-card">
-            <div class="profile-card__title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-              </svg>
-              Primeiro destino
-            </div>
-            <p class="profile-card__desc">
-              Já tem algum destino em mente? Adicione agora ou explore os
-              destinos públicos de outros viajantes.
-            </p>
-            <a href="{% url 'destinations:dashboard' %}" class="profile-card__cta">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="12" y1="5" x2="12" y2="19"/>
-                <line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
-              Adicionar depois
-            </a>
-          </div>
-
         </div>
 
         <!-- Ações -->
@@ -229,6 +208,15 @@
             Salvar e começar
           </button>
         </div>
+
+        <!-- Redefinir senha -->
+        <p style="margin-top:1rem; font-size:.8125rem; color:var(--color-muted-fg); text-align:center;">
+          Quer redefinir sua senha?
+          <a href="{% url 'accounts:password_reset' %}"
+            style="color:var(--color-primary); text-decoration:none; font-weight:500;">
+            Receber link por e-mail
+          </a>
+        </p>
 
       </form>
 

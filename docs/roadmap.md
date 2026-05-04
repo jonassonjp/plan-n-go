@@ -17,6 +17,8 @@
 - [x] Login automático após confirmação
 - [x] Página de perfil dentro do sistema (com navbar, indicador de progresso)
 - [x] Campos de perfil: foto, nome público, nacionalidade
+- [x] Redefinição de senha via e-mail (4 views, 5 templates)
+- [x] Comandos de gerenciamento: `set_passwords_to_123`, `set_superuser`
 
 ### Destinos
 - [x] Model `Destination` completo
@@ -69,22 +71,23 @@
 
 ---
 
-## 🚧 Em desenvolvimento
-
 ### Roteiros
-- [ ] Model `Roteiro` vinculado a um destino do usuário
-- [ ] Model `Dia` — cada roteiro tem N dias
-- [ ] Model `Indicacao` — cada dia tem N indicações (pontos turísticos, atividades)
-- [ ] Custo médio de hospedagem por dia
-- [ ] Custo médio de alimentação por dia
-- [ ] Indicações de alimentação por dia (restaurantes, cafés, mercados)
-- [ ] Geração automática via IA (Claude)
-- [ ] Edição manual dia a dia
-- [ ] Visibilidade: privado, restrito, público
+- [x] Model `Roteiro` vinculado a um destino do usuário
+- [x] Model `Dia` — cada roteiro tem N dias
+- [x] Model `Indicacao` — cada dia tem N indicações (pontos turísticos, atividades)
+- [x] Custo médio de hospedagem e alimentação por dia
+- [x] Geração automática via IA (Claude Sonnet)
+- [x] Edição manual dia a dia
+- [x] Visibilidade: privado, restrito, público
+- [x] Loading spinner durante geração com IA
 
 ### Feed público
-- [ ] Exploração de destinos públicos de outros usuários
-- [ ] Feed de descoberta
+- [x] Exploração de destinos e roteiros públicos de outros usuários
+- [x] Feed de descoberta
+
+---
+
+## 🚧 Em desenvolvimento
 
 ### Avaliação pós-visita
 - [ ] 1 a 5 estrelas

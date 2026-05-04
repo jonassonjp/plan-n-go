@@ -42,6 +42,7 @@ A tela exibe 4 etapas:
 - **Salvar**: preenche os campos e clica "Salvar e começar"  
   → salva e redireciona para o dashboard
 - **Nome público vazio**: property `public_name` retorna o nome completo automaticamente
+- **Redefinir senha**: link "Receber link por e-mail" abaixo dos botões redireciona para `/accounts/password-reset/`
 
 ---
 

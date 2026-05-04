@@ -415,12 +415,11 @@ a    { color: inherit; text-decoration: none; }
 }
 .profile-card__title svg { width: .875rem; height: .875rem; }
 
-/* Identidade pública — layout lado a lado */
+/* Identidade pública — layout vertical */
 .profile-identity {
   display: flex;
-  align-items: flex-start;
-  gap: 1.5rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
 .profile-avatar-area {
@@ -468,7 +467,7 @@ a    { color: inherit; text-decoration: none; }
 }
 .btn-upload:hover { background: var(--color-primary-subtle); }
 
-.profile-name-field { flex: 1; min-width: 200px; }
+.profile-name-field { width: 100%; }
 
 /* Tip box */
 .profile-tip {

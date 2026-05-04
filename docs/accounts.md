@@ -21,6 +21,10 @@
 | `GET/POST /accounts/profile/setup/` | `profile_setup_view` | Completa o perfil            |
 | `GET/POST /accounts/login/`      | `login_view`       | Login por e-mail                 |
 | `POST /accounts/logout/`         | `logout_view`      | Logout (requer POST)             |
+| `GET/POST /accounts/password-reset/` | `PasswordResetView` | Formulário de redefinição de senha |
+| `GET /accounts/password-reset/done/` | `PasswordResetDoneView` | Confirmação de envio do link |
+| `GET/POST /accounts/reset/<uidb64>/<token>/` | `PasswordResetConfirmView` | Nova senha |
+| `GET /accounts/reset/done/` | `PasswordResetCompleteView` | Senha redefinida com sucesso |
 
 ---
 
@@ -87,6 +91,28 @@ Subject: Confirme seu e-mail — Plan N'Go
 ...
 http://localhost:8000/accounts/confirm/550e8400-e29b-41d4-a716-446655440000/
 ```
+
+---
+
+## Redefinição de senha
+
+Fluxo padrão do Django (`django.contrib.auth.views`):
+
+1. Usuário acessa `/accounts/password-reset/` e informa o e-mail
+2. E-mail com link único é enviado (em dev: impresso no terminal)
+3. Usuário clica no link `/accounts/reset/<uidb64>/<token>/` e define nova senha
+4. Redirecionado para `/accounts/reset/done/` com mensagem de sucesso
+
+O link para redefinição também está disponível na página de perfil (`/accounts/profile/setup/`).
+
+---
+
+## Comandos de gerenciamento (dev)
+
+| Comando | Descrição |
+|---|---|
+| `python manage.py set_passwords_to_123` | Redefine a senha de todos os usuários para `123` |
+| `python manage.py set_superuser <email>` | Promove um usuário a superusuário por e-mail |
 
 ---
 
